@@ -1,238 +1,308 @@
 /*
- * Fused rotation + quantization CUDA kernel for TurboQuant.
+ * TurboQuant CUDA kernels: complete kernel set for KV cache quantization.
  *
- * Fuses three operations into a single kernel launch:
- *   1. WHT rotation (butterfly structure)
- *   2. Centroid distance computation
- *   3. Argmin codebook lookup
+ * Four kernels ported from open_gororoba + steinmarder patterns:
+ *   1. turboquant_quantize_boundary: boundary-search scalar quantization
+ *   2. turboquant_dequant_dot: fused dequant + dot product (attention hot path)
+ *   3. turboquant_sign_dot: QJL sign-sketch inner product with bit-packed signs
+ *   4. turboquant_fast_jl_rotate: in-place Walsh-Hadamard Transform
  *
- * Key optimization patterns from steinmarder:
- *   - Shared memory codebook: Lloyd-Max codebook (max 16 entries @ 4-bit)
- *     fits entirely in shared memory, broadcast to all threads in a warp.
- *   - 8-wide ILP: process 8 coordinates per thread for instruction-level
- *     parallelism, hiding FFMA latency (4.54 cyc on Ada Lovelace).
- *   - Vectorized loads: float4 for coalesced global memory access.
- *   - Storage-compute split: store quantized indices in INT4/INT8,
- *     promote to FP32 for all arithmetic.
+ * Design rules (from steinmarder SASS measurements on Ada sm_89):
+ *   - Maximize FFMA (4.54 cyc, 44.6 ops/clk/SM) -- the workhorse
+ *   - AVOID MUFU.RCP (41.53 cyc) and MUFU.EX2 (17.55 cyc) -- too slow
+ *   - Minimize LDG L2 miss (92-123 cyc), target L1 residency (128KB Ada)
+ *   - POPC = 7-8 cyc, fast enough for inline sign operations
+ *   - FTZ = zero overhead on Ada
  *
- * Reference: steinmarder/src/sass_re/instant_ngp/mlp_forward.cu
- *            steinmarder/src/cuda_lbm/kernels_fp8.cu
+ * Layout: SoA (Structure-of-Arrays)
+ *   indices[coord_idx * n_vectors + vec_idx] -- coalesced per-coordinate access
+ *   signs packed as u32 words (32 signs per word)
+ *
+ * Storage-compute split (from steinmarder INT8 SoA LBM, 5956 MLUPS):
+ *   Store as u8 indices, promote to f32 centroid values at point of use.
+ *   Codebook fits in L1 cache (max 16 entries @ 4-bit = 64 bytes).
+ *
+ * References:
+ *   steinmarder/src/cuda_lbm/kernels_int8_soa_lloydmax.cu
+ *   open_gororoba/crates/cd_kernel/src/turboquant/cuda/kernels/turboquant.cu
  */
 
 #include <torch/extension.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#define BLOCK_SIZE 256
-#define MAX_CENTROIDS 16  /* 4-bit max */
-#define MAX_DIM 256
+/* ====================================================================
+ * Kernel 1: Boundary-search scalar quantization
+ *
+ * Quantize f32 values using sorted Lloyd-Max boundaries.
+ * Index = count(boundaries[j] < value). For 3-bit (7 boundaries),
+ * this is 7 comparisons -- the compiler unrolls for small counts.
+ *
+ * Pattern: steinmarder lm_encode() with boundary count instead of
+ * linear mapping. More accurate for non-uniform Lloyd-Max codebooks.
+ * ==================================================================== */
 
-/*
- * Fused WHT rotation + scalar quantization kernel.
+__global__ void turboquant_quantize_boundary_kernel(
+    const float* __restrict__ boundaries,
+    const float* __restrict__ values,
+    unsigned char* __restrict__ indices,
+    int n_boundaries,
+    int n_values
+) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= n_values) return;
+
+    float v = values[idx];
+    unsigned char count = 0;
+
+    /* Boundary count: unrolled by compiler for small n_boundaries */
+    for (int b = 0; b < n_boundaries; b++) {
+        if (v > boundaries[b]) count++;
+    }
+    indices[idx] = count;
+}
+
+/* ====================================================================
+ * Kernel 2: Fused dequant + dot product (attention hot path)
  *
- * Each thread block processes one vector. Within the block:
- *   - Phase 1: Load vector into shared memory, apply WHT butterfly
- *   - Phase 2: Each thread quantizes its assigned coordinates
+ * For each (query, key) pair, compute the attention score directly
+ * from compressed key indices without full decompression.
  *
- * The WHT butterfly uses shared memory for the butterfly operations,
- * with __syncthreads() between levels (log2(d) levels total).
- */
-__global__ void fused_wht_quantize_kernel(
-    const float* __restrict__ input,    /* (n, d) */
-    const float* __restrict__ d1,       /* (d,) sign vector */
-    const float* __restrict__ d2,       /* (d,) sign vector */
-    const float* __restrict__ centroids,/* (n_centroids,) */
-    int8_t* __restrict__ indices,       /* (n, d) output */
-    int n,
+ * SoA layout: key_indices[coord * n_keys + key_idx] for coalesced reads.
+ * Storage-compute split: read u8 index, look up f32 centroid, FFMA.
+ *
+ * Pattern: steinmarder storage-compute split from kernels_int8_soa.cu
+ * ==================================================================== */
+
+__global__ void turboquant_dequant_dot_kernel(
+    const float* __restrict__ queries,       /* (n_queries, d) row-major */
+    const unsigned char* __restrict__ key_indices, /* (d, n_keys) SoA */
+    const float* __restrict__ centroids,     /* (n_levels,) codebook */
+    const float* __restrict__ key_norms,     /* (n_keys,) per-key scale */
+    float* __restrict__ scores,              /* (n_queries, n_keys) output */
     int d,
-    int n_centroids
+    int n_queries,
+    int n_keys,
+    int n_levels
 ) {
-    __shared__ float smem_vec[MAX_DIM];
-    __shared__ float smem_centroids[MAX_CENTROIDS];
+    int qi = blockIdx.y;
+    int ki = blockIdx.x * blockDim.x + threadIdx.x;
+    if (qi >= n_queries || ki >= n_keys) return;
 
-    int vec_idx = blockIdx.x;
-    if (vec_idx >= n) return;
+    const float* q = queries + qi * d;
+    float dot = 0.0f;
 
-    int tid = threadIdx.x;
-
-    /* Load centroids into shared memory (once per block) */
-    if (tid < n_centroids) {
-        smem_centroids[tid] = centroids[tid];
+    /* Storage-compute split: u8 -> f32 codebook lookup, then FFMA */
+    for (int c = 0; c < d; c++) {
+        unsigned char idx = key_indices[(long long)c * n_keys + ki]; /* SoA coalesced */
+        float k_val = centroids[idx];                                /* L1 cached */
+        dot = fmaf(q[c], k_val, dot);                               /* FFMA */
     }
 
-    /* Load vector and apply D2 sign flip */
-    if (tid < d) {
-        smem_vec[tid] = input[vec_idx * d + tid] * d2[tid];
-    }
-    __syncthreads();
-
-    /* WHT butterfly (log2(d) levels) */
-    for (int h = 1; h < d; h <<= 1) {
-        if (tid < d) {
-            int pair_idx = tid ^ h;  /* XOR gives butterfly partner */
-            if (pair_idx > tid) {
-                float a = smem_vec[tid];
-                float b = smem_vec[pair_idx];
-                smem_vec[tid] = a + b;
-                smem_vec[pair_idx] = a - b;
-            }
-        }
-        __syncthreads();
-    }
-
-    /* Normalize and apply D1 sign flip */
-    float inv_sqrt_d = rsqrtf((float)d);
-    if (tid < d) {
-        smem_vec[tid] = smem_vec[tid] * inv_sqrt_d * d1[tid];
-    }
-    __syncthreads();
-
-    /* Quantize: find nearest centroid for each coordinate */
-    if (tid < d) {
-        float val = smem_vec[tid];
-        float best_dist = fabsf(val - smem_centroids[0]);
-        int best_idx = 0;
-
-        /* Unrolled for small codebooks (ILP pattern from steinmarder) */
-        #pragma unroll
-        for (int c = 1; c < MAX_CENTROIDS; c++) {
-            if (c < n_centroids) {
-                float dist = fabsf(val - smem_centroids[c]);
-                if (dist < best_dist) {
-                    best_dist = dist;
-                    best_idx = c;
-                }
-            }
-        }
-        indices[vec_idx * d + tid] = (int8_t)best_idx;
-    }
+    scores[qi * n_keys + ki] = dot * key_norms[ki];
 }
 
-/*
- * PyTorch C++ extension wrapper.
- */
-torch::Tensor fused_wht_quantize(
-    torch::Tensor input,
-    torch::Tensor d1,
-    torch::Tensor d2,
-    torch::Tensor centroids
+/* ====================================================================
+ * Kernel 3: QJL sign-sketch inner product with bit-packed signs
+ *
+ * Compute the QJL correction: ||r|| * sqrt(pi/2)/m * <S@q, signs>
+ * Signs are packed 32 per u32 word; uses POPC (7-8 cyc on Ada).
+ *
+ * Pattern: open_gororoba sign_pack.rs popcount inner product
+ * ==================================================================== */
+
+__global__ void turboquant_sign_dot_kernel(
+    const float* __restrict__ s_matrix,        /* (m, d) projection */
+    const float* __restrict__ query,           /* (d,) single query */
+    const unsigned int* __restrict__ packed_signs, /* (n_keys, n_words) */
+    const float* __restrict__ residual_norms,  /* (n_keys,) */
+    float* __restrict__ correction,            /* (n_keys,) output */
+    int d,
+    int m,
+    int n_keys,
+    int n_words,
+    float scale /* sqrt(pi/2) / m */
 ) {
-    TORCH_CHECK(input.is_cuda(), "input must be on CUDA");
-    TORCH_CHECK(input.dim() == 2, "input must be 2D (n, d)");
+    int ki = blockIdx.x * blockDim.x + threadIdx.x;
+    if (ki >= n_keys) return;
 
-    int n = input.size(0);
-    int d = input.size(1);
-    int n_centroids = centroids.size(0);
+    const unsigned int* signs = packed_signs + ki * n_words;
+    float result = 0.0f;
 
-    TORCH_CHECK(d <= MAX_DIM, "d must be <= ", MAX_DIM);
-    TORCH_CHECK(n_centroids <= MAX_CENTROIDS, "n_centroids must be <= ", MAX_CENTROIDS);
+    for (int j = 0; j < m; j++) {
+        /* Project query through S for dimension j */
+        float proj = 0.0f;
+        const float* s_row = s_matrix + j * d;
+        for (int i = 0; i < d; i++) {
+            proj = fmaf(s_row[i], query[i], proj);
+        }
 
-    auto indices = torch::empty({n, d}, torch::dtype(torch::kInt8).device(input.device()));
+        /* Extract sign bit: +1 if set, -1 if clear */
+        int word_idx = j >> 5;   /* j / 32 */
+        int bit_idx = j & 31;    /* j % 32 */
+        float sign = (signs[word_idx] >> bit_idx) & 1 ? 1.0f : -1.0f;
+        result = fmaf(proj, sign, result);
+    }
 
-    int threads = d;  /* one thread per coordinate */
-    int blocks = n;   /* one block per vector */
-
-    fused_wht_quantize_kernel<<<blocks, threads>>>(
-        input.data_ptr<float>(),
-        d1.data_ptr<float>(),
-        d2.data_ptr<float>(),
-        centroids.data_ptr<float>(),
-        indices.data_ptr<int8_t>(),
-        n, d, n_centroids
-    );
-
-    return indices;
+    correction[ki] = residual_norms[ki] * scale * result;
 }
 
-/*
- * Fused asymmetric attention kernel.
+/* ====================================================================
+ * Kernel 4: Fast Walsh-Hadamard Transform (in-place)
  *
- * Computes: scores[q,k] = <Q[q], K_mse[k]> + ||r[k]|| * C * <S@Q[q], signs[k]>
+ * Each thread transforms one d-dimensional vector.
+ * For d=128: 7 butterfly levels, 896 FFMA per vector ~ 100 cycles.
  *
- * Both terms are computed in a single pass over the compressed keys.
- * This avoids materializing the full K_mse matrix and the S@Q intermediate.
- *
- * Pattern: steinmarder's instant-NGP MLP kernel uses 8-wide FFMA accumulators
- * to saturate the FP32 pipeline. We apply the same principle: each thread
- * accumulates both the MSE inner product and the QJL correction simultaneously,
- * interleaving independent FFMA chains.
- */
-__global__ void fused_asymmetric_attention_kernel(
-    const float* __restrict__ queries,     /* (n_q, d) */
-    const float* __restrict__ k_mse,       /* (n_k, d) */
-    const int8_t* __restrict__ qjl_signs,  /* (n_k, d) */
-    const float* __restrict__ r_norms,     /* (n_k,) */
-    const float* __restrict__ S,           /* (d, d) - QJL projection matrix */
-    float* __restrict__ scores,            /* (n_q, n_k) */
-    int n_q, int n_k, int d,
-    float correction_scale
+ * Pattern: open_gororoba turboquant_fast_jl_rotate
+ * ==================================================================== */
+
+__global__ void turboquant_fast_jl_rotate_kernel(
+    float* __restrict__ data,    /* (n_vectors, d) in-place */
+    const float* __restrict__ d1, /* (d,) Rademacher diagonal 1 */
+    const float* __restrict__ d2, /* (d,) Rademacher diagonal 2 */
+    int d,
+    int n_vectors,
+    float inv_sqrt_d
 ) {
-    int q_idx = blockIdx.x;
-    int k_idx = blockIdx.y * blockDim.x + threadIdx.x;
+    int vid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (vid >= n_vectors) return;
 
-    if (q_idx >= n_q || k_idx >= n_k) return;
+    float* vec = data + vid * d;
 
-    /* Accumulate both terms simultaneously (ILP: two independent chains) */
-    float term1 = 0.0f;  /* <Q, K_mse> */
-    float term2 = 0.0f;  /* <S@Q, signs> */
-
+    /* Step 1: multiply by D2 */
     for (int i = 0; i < d; i++) {
-        float q_val = queries[q_idx * d + i];
-        float k_val = k_mse[k_idx * d + i];
-        float sign = (float)qjl_signs[k_idx * d + i];
-
-        /* Term 1: direct inner product */
-        term1 += q_val * k_val;
-
-        /* Term 2: project query through S, dot with signs */
-        /* S@Q[i] = sum_j S[i][j] * Q[j] -- precompute outside if possible */
-        float sq_val = 0.0f;
-        for (int j = 0; j < d; j++) {
-            sq_val += S[i * d + j] * queries[q_idx * d + j];
-        }
-        term2 += sq_val * sign;
+        vec[i] *= d2[i];
     }
 
-    /* Combine with residual norm scaling */
-    float r_norm = r_norms[k_idx];
-    scores[q_idx * n_k + k_idx] = term1 + r_norm * correction_scale * term2;
+    /* Step 2: in-place WHT butterfly */
+    for (int h = 1; h < d; h *= 2) {
+        for (int i = 0; i < d; i += h * 2) {
+            for (int j = i; j < i + h; j++) {
+                float a = vec[j];
+                float b = vec[j + h];
+                vec[j] = a + b;
+                vec[j + h] = a - b;
+            }
+        }
+    }
+
+    /* Step 3: normalize and multiply by D1 */
+    for (int i = 0; i < d; i++) {
+        vec[i] *= inv_sqrt_d * d1[i];
+    }
 }
 
-torch::Tensor fused_asymmetric_attention(
+/* ====================================================================
+ * PyTorch C++ extension wrappers
+ * ==================================================================== */
+
+torch::Tensor turboquant_quantize_boundary(
+    torch::Tensor boundaries,
+    torch::Tensor values
+) {
+    TORCH_CHECK(values.is_cuda(), "values must be on CUDA");
+    int n_boundaries = boundaries.size(0);
+    int n_values = values.numel();
+
+    auto indices = torch::empty({n_values}, torch::dtype(torch::kUInt8).device(values.device()));
+
+    int threads = 256;
+    int blocks = (n_values + threads - 1) / threads;
+
+    turboquant_quantize_boundary_kernel<<<blocks, threads>>>(
+        boundaries.data_ptr<float>(),
+        values.data_ptr<float>(),
+        indices.data_ptr<unsigned char>(),
+        n_boundaries, n_values
+    );
+    return indices.reshape_as(values);
+}
+
+torch::Tensor turboquant_dequant_dot(
     torch::Tensor queries,
-    torch::Tensor k_mse,
-    torch::Tensor qjl_signs,
-    torch::Tensor r_norms,
-    torch::Tensor S,
-    float correction_scale
+    torch::Tensor key_indices,
+    torch::Tensor centroids,
+    torch::Tensor key_norms
 ) {
     TORCH_CHECK(queries.is_cuda(), "queries must be on CUDA");
-
-    int n_q = queries.size(0);
-    int n_k = k_mse.size(0);
+    int n_queries = queries.size(0);
     int d = queries.size(1);
+    int n_keys = key_indices.size(1);
+    int n_levels = centroids.size(0);
 
-    auto scores = torch::empty({n_q, n_k}, queries.options());
+    auto scores = torch::empty({n_queries, n_keys}, queries.options());
 
-    dim3 blocks(n_q, (n_k + 255) / 256);
-    dim3 threads(min(n_k, 256));
+    int threads = 256;
+    dim3 blocks_dim((n_keys + threads - 1) / threads, n_queries);
 
-    fused_asymmetric_attention_kernel<<<blocks, threads>>>(
+    turboquant_dequant_dot_kernel<<<blocks_dim, threads>>>(
         queries.data_ptr<float>(),
-        k_mse.data_ptr<float>(),
-        qjl_signs.data_ptr<int8_t>(),
-        r_norms.data_ptr<float>(),
-        S.data_ptr<float>(),
+        key_indices.data_ptr<unsigned char>(),
+        centroids.data_ptr<float>(),
+        key_norms.data_ptr<float>(),
         scores.data_ptr<float>(),
-        n_q, n_k, d, correction_scale
+        d, n_queries, n_keys, n_levels
     );
-
     return scores;
 }
 
+torch::Tensor turboquant_sign_dot(
+    torch::Tensor s_matrix,
+    torch::Tensor query,
+    torch::Tensor packed_signs,
+    torch::Tensor residual_norms,
+    float scale
+) {
+    TORCH_CHECK(query.is_cuda(), "query must be on CUDA");
+    int d = s_matrix.size(1);
+    int m = s_matrix.size(0);
+    int n_keys = packed_signs.size(0);
+    int n_words = packed_signs.size(1);
+
+    auto correction = torch::empty({n_keys}, query.options());
+
+    int threads = 256;
+    int blocks = (n_keys + threads - 1) / threads;
+
+    turboquant_sign_dot_kernel<<<blocks, threads>>>(
+        s_matrix.data_ptr<float>(),
+        query.data_ptr<float>(),
+        (const unsigned int*)packed_signs.data_ptr<int>(),
+        residual_norms.data_ptr<float>(),
+        correction.data_ptr<float>(),
+        d, m, n_keys, n_words, scale
+    );
+    return correction;
+}
+
+void turboquant_fast_jl_rotate(
+    torch::Tensor data,
+    torch::Tensor d1,
+    torch::Tensor d2
+) {
+    TORCH_CHECK(data.is_cuda(), "data must be on CUDA");
+    int n_vectors = data.size(0);
+    int d = data.size(1);
+    float inv_sqrt_d = 1.0f / sqrtf((float)d);
+
+    int threads = 128;
+    int blocks = (n_vectors + threads - 1) / threads;
+
+    turboquant_fast_jl_rotate_kernel<<<blocks, threads>>>(
+        data.data_ptr<float>(),
+        d1.data_ptr<float>(),
+        d2.data_ptr<float>(),
+        d, n_vectors, inv_sqrt_d
+    );
+}
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-    m.def("fused_wht_quantize", &fused_wht_quantize,
-          "Fused WHT rotation + scalar quantization");
-    m.def("fused_asymmetric_attention", &fused_asymmetric_attention,
-          "Fused asymmetric attention from compressed keys");
+    m.def("turboquant_quantize_boundary", &turboquant_quantize_boundary,
+          "Boundary-search Lloyd-Max quantization");
+    m.def("turboquant_dequant_dot", &turboquant_dequant_dot,
+          "Fused dequant + dot product (attention hot path)");
+    m.def("turboquant_sign_dot", &turboquant_sign_dot,
+          "QJL sign-sketch inner product with bit-packed signs");
+    m.def("turboquant_fast_jl_rotate", &turboquant_fast_jl_rotate,
+          "In-place Fast Walsh-Hadamard Transform with Rademacher diagonals");
 }

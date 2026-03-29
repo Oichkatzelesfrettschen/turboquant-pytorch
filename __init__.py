@@ -50,6 +50,9 @@ from .hierarchical import (
 # Sign packing (8x QJL memory reduction)
 from .sign_pack import pack_signs, unpack_signs, packed_inner_product
 
+# 8D K-Means VQ codebook (NSNQuant-style, calibration-free)
+from .kmeans_vq import KMeans8DQuantizer
+
 # E8-block rotation (136x parameter reduction, KS-validated)
 from .e8_rotation import E8BlockRotation
 

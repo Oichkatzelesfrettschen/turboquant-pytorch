@@ -1,19 +1,24 @@
 """
 CUDA kernel wrappers with automatic fallback to pure PyTorch.
 
-Attempts to JIT-compile the CUDA kernels in csrc/ on first use.
-If CUDA is unavailable or compilation fails, all functions transparently
-fall back to the equivalent pure PyTorch implementations.
+Four kernels ported from open_gororoba + steinmarder:
+    1. turboquant_quantize_boundary: Lloyd-Max boundary-search quantization
+    2. turboquant_dequant_dot: fused dequant + dot product (attention hot path)
+    3. turboquant_sign_dot: QJL sign-sketch inner product with bit-packed signs
+    4. turboquant_fast_jl_rotate: in-place Walsh-Hadamard Transform
 
-Optimization patterns from steinmarder applied:
+JIT-compiles on first use. Falls back to pure PyTorch if CUDA unavailable.
+
+Optimization patterns:
     - Storage-compute split: INT8 indices in memory, FP32 for arithmetic
-    - Shared memory codebook: broadcast to all threads in a warp
-    - 8-wide ILP: independent FFMA accumulator chains
-    - Vectorized loads: float4 coalesced access
+    - SoA layout: key_indices[coord * n_keys + key_idx] for coalesced reads
+    - Codebook in L1: max 16 entries @ 4-bit = 64 bytes (fits in register file)
+    - POPC for bit-packed sign inner products (7-8 cyc on Ada)
 """
 
-import os
 import math
+import os
+
 import torch
 from torch import Tensor
 from typing import Optional
@@ -48,85 +53,173 @@ def _try_load_cuda():
     return _cuda_available
 
 
-def fused_wht_quantize(
-    x: Tensor,
-    d1: Tensor,
-    d2: Tensor,
-    centroids: Tensor,
+# ---------------------------------------------------------------------------
+# Kernel 1: Boundary-search quantization
+# ---------------------------------------------------------------------------
+
+def quantize_boundary(
+    values: Tensor,
+    boundaries: Tensor,
     *,
     use_cuda: Optional[bool] = None,
 ) -> Tensor:
     """
-    Fused WHT rotation + scalar quantization.
+    Quantize f32 values using sorted Lloyd-Max boundaries.
 
-    Applies D1 @ H_d @ D2 @ x, then quantizes each coordinate to the
-    nearest centroid. Fuses three kernel launches into one.
-
-    Args:
-        x: input vectors, shape (n, d)
-        d1: first sign vector, shape (d,)
-        d2: second sign vector, shape (d,)
-        centroids: Lloyd-Max centroids, shape (n_centroids,)
-        use_cuda: force CUDA (True), force CPU (False), or auto-detect (None)
-
-    Returns:
-        Quantization indices, shape (n, d), int8.
-    """
-    if use_cuda is None:
-        use_cuda = x.is_cuda and _try_load_cuda()
-
-    if use_cuda and _cuda_module is not None:
-        return _cuda_module.fused_wht_quantize(x, d1, d2, centroids)
-
-    # Pure PyTorch fallback
-    from .rotations import _fast_hadamard
-    y = x * d2
-    y = _fast_hadamard(y)
-    y = y * d1
-    diffs = y.unsqueeze(-1) - centroids
-    indices = diffs.abs().argmin(dim=-1).to(torch.int8)
-    return indices
-
-
-def fused_asymmetric_attention(
-    queries: Tensor,
-    k_mse: Tensor,
-    qjl_signs: Tensor,
-    r_norms: Tensor,
-    S: Tensor,
-    correction_scale: float,
-    *,
-    use_cuda: Optional[bool] = None,
-) -> Tensor:
-    """
-    Fused asymmetric attention score computation.
-
-    scores[q,k] = <Q[q], K_mse[k]> + ||r[k]|| * C * <S@Q[q], signs[k]>
+    Index = count(boundaries[j] < value). For 3-bit: 7 comparisons.
 
     Args:
-        queries: query vectors, shape (n_q, d)
-        k_mse: MSE-reconstructed keys, shape (n_k, d)
-        qjl_signs: QJL sign bits, shape (n_k, d), int8
-        r_norms: residual norms, shape (n_k,)
-        S: QJL projection matrix, shape (d, d)
-        correction_scale: sqrt(pi/2) / m
+        values: input f32 tensor, any shape
+        boundaries: sorted boundary tensor, shape (2^bits - 1,)
         use_cuda: force CUDA/CPU/auto
 
     Returns:
-        Attention scores, shape (n_q, n_k).
+        Quantization indices, same shape as values, dtype uint8.
+    """
+    if use_cuda is None:
+        use_cuda = values.is_cuda and _try_load_cuda()
+
+    if use_cuda and _cuda_module is not None:
+        return _cuda_module.turboquant_quantize_boundary(boundaries, values)
+
+    # Pure PyTorch fallback
+    count = (values.unsqueeze(-1) > boundaries).sum(dim=-1)
+    return count.to(torch.uint8)
+
+
+# ---------------------------------------------------------------------------
+# Kernel 2: Fused dequant + dot product
+# ---------------------------------------------------------------------------
+
+def dequant_dot(
+    queries: Tensor,
+    key_indices: Tensor,
+    centroids: Tensor,
+    key_norms: Tensor,
+    *,
+    use_cuda: Optional[bool] = None,
+) -> Tensor:
+    """
+    Fused dequant + dot product for attention scoring.
+
+    Computes scores[q,k] = key_norms[k] * sum_c(queries[q,c] * centroids[key_indices[c,k]])
+
+    SoA layout: key_indices[coord, key_idx] for coalesced CUDA reads.
+
+    Args:
+        queries: (n_queries, d) float
+        key_indices: (d, n_keys) uint8 in SoA layout
+        centroids: (n_levels,) float codebook
+        key_norms: (n_keys,) float per-key scaling
+
+    Returns:
+        Attention scores, (n_queries, n_keys) float.
     """
     if use_cuda is None:
         use_cuda = queries.is_cuda and _try_load_cuda()
 
     if use_cuda and _cuda_module is not None:
-        return _cuda_module.fused_asymmetric_attention(
-            queries, k_mse, qjl_signs, r_norms, S, correction_scale
+        return _cuda_module.turboquant_dequant_dot(
+            queries, key_indices, centroids, key_norms
+        )
+
+    # Pure PyTorch fallback: dequantize then matmul
+    keys_recon = centroids[key_indices.long()]  # (d, n_keys)
+    scores = queries @ keys_recon.float()  # (n_queries, n_keys)
+    return scores * key_norms.unsqueeze(0)
+
+
+# ---------------------------------------------------------------------------
+# Kernel 3: QJL sign-sketch inner product
+# ---------------------------------------------------------------------------
+
+def sign_dot(
+    s_matrix: Tensor,
+    query: Tensor,
+    packed_signs: Tensor,
+    residual_norms: Tensor,
+    correction_scale: float,
+    *,
+    use_cuda: Optional[bool] = None,
+) -> Tensor:
+    """
+    QJL correction: ||r|| * sqrt(pi/2)/m * <S@q, signs>.
+
+    Signs are bit-packed as int32 words (32 signs per word).
+
+    Args:
+        s_matrix: (m, d) QJL projection matrix
+        query: (d,) single query vector
+        packed_signs: (n_keys, n_words) int32 packed sign bits
+        residual_norms: (n_keys,) float
+        correction_scale: sqrt(pi/2) / m
+
+    Returns:
+        QJL correction terms, (n_keys,) float.
+    """
+    if use_cuda is None:
+        use_cuda = query.is_cuda and _try_load_cuda()
+
+    if use_cuda and _cuda_module is not None:
+        return _cuda_module.turboquant_sign_dot(
+            s_matrix, query, packed_signs, residual_norms, correction_scale
         )
 
     # Pure PyTorch fallback
-    term1 = queries @ k_mse.T
-    q_projected = queries @ S.T
-    signs_float = qjl_signs.float()
-    qjl_ip = q_projected @ signs_float.T
-    term2 = correction_scale * qjl_ip * r_norms.unsqueeze(0)
-    return term1 + term2
+    projected = s_matrix @ query  # (m,)
+    # Unpack signs from int32 words
+    m = s_matrix.shape[0]
+    n_keys = packed_signs.shape[0]
+    signs = torch.zeros(n_keys, m, device=query.device)
+    for w in range(packed_signs.shape[1]):
+        for b in range(32):
+            j = w * 32 + b
+            if j >= m:
+                break
+            bit = (packed_signs[:, w] >> b) & 1
+            signs[:, j] = bit.float() * 2 - 1
+
+    qjl_ip = signs @ projected  # (n_keys,)
+    return residual_norms * correction_scale * qjl_ip
+
+
+# ---------------------------------------------------------------------------
+# Kernel 4: Fast Walsh-Hadamard Transform
+# ---------------------------------------------------------------------------
+
+def fast_jl_rotate(
+    data: Tensor,
+    d1: Tensor,
+    d2: Tensor,
+    *,
+    use_cuda: Optional[bool] = None,
+    inplace: bool = False,
+) -> Tensor:
+    """
+    Fast JL rotation: y = D1 * WHT * D2 * x (in-place on CUDA).
+
+    Args:
+        data: (n_vectors, d) float
+        d1: (d,) Rademacher diagonal 1
+        d2: (d,) Rademacher diagonal 2
+        use_cuda: force CUDA/CPU/auto
+        inplace: if True, modify data in-place (CUDA only)
+
+    Returns:
+        Rotated data, same shape.
+    """
+    if use_cuda is None:
+        use_cuda = data.is_cuda and _try_load_cuda()
+
+    if use_cuda and _cuda_module is not None:
+        if not inplace:
+            data = data.clone()
+        _cuda_module.turboquant_fast_jl_rotate(data, d1, d2)
+        return data
+
+    # Pure PyTorch fallback
+    from .rotations import _fast_hadamard
+    y = data * d2
+    y = _fast_hadamard(y)
+    y = y * d1
+    return y

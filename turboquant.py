@@ -90,6 +90,12 @@ def _make_quantizer(
         from .lattice_vq import Z8PrefixCutQuantizer
         level = quantizer.split("_")[1] if "_" in quantizer else "256"
         return Z8PrefixCutQuantizer(d, level=level, device=device)
+    if quantizer == "kmeans" or (isinstance(quantizer, str) and quantizer.startswith("kmeans")):
+        from .kmeans_vq import KMeans8DQuantizer
+        n_cw = 256
+        if "_" in str(quantizer):
+            n_cw = int(quantizer.split("_")[1])
+        return KMeans8DQuantizer(d, n_codewords=n_cw, device=device)
     raise ValueError(
         f"Unknown quantizer: {quantizer!r}. "
         f"Use None, 'scalar', 'e8', 'z8_256', etc., or a VectorQuantizer instance."
