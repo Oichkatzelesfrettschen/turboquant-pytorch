@@ -24,7 +24,7 @@ attention bandwidth from 256B to 34B. Five-tier GPU dispatch
 Third, we ground the rotation design space in Cayley-Dickson
 algebra, proving isometric guarantees for structured block
 rotations (55 statements across 30 proof groups, SMT-verified).
-Ablation reveals a
-surprising dichotomy: distribution normalization determines
+Ablation reveals a surprising dichotomy: distribution
+normalization determines
 quality (>99% of gain) while architecture-aware dispatch
 determines throughput.
