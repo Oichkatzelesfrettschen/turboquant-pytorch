@@ -56,5 +56,13 @@ from .e8_rotation import E8BlockRotation
 # Clifford rotor rotation (RotorQuant synthesis)
 from .clifford_rotor import CliffordRotorRotation
 
+# NSN pre-processing + KIVI asymmetry + group-wise quantization + precision windows
+from .nsn_preprocess import (
+    nsn_preprocess, nsn_restore, adaptive_vq_scale,
+    kivi_quantize_keys, kivi_dequantize_keys,
+    kivi_quantize_values, kivi_dequantize_values,
+    PrecisionWindows,
+)
+
 # Smart configuration presets
 from .config import TurboQuantConfig, KVCacheConfig
