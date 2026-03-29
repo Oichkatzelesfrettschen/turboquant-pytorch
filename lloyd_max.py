@@ -133,11 +133,15 @@ class LloydMaxCodebook:
         # Solve outside lock (expensive, don't hold lock during computation)
         centroids, boundaries = solve_lloyd_max(d, bits, use_exact)
         distortion = compute_expected_distortion(d, bits, centroids, boundaries, use_exact)
+        # Double-checked locking: another thread may have solved while we were computing
+        with _codebook_lock:
+            if cache_key not in _codebook_cache:
+                _codebook_cache[cache_key] = (centroids, boundaries, distortion)
+            else:
+                centroids, boundaries, distortion = _codebook_cache[cache_key]
         self.centroids = centroids
         self.boundaries = boundaries
         self.distortion = distortion
-        with _codebook_lock:
-            _codebook_cache[cache_key] = (centroids, boundaries, distortion)
 
     def quantize(self, x: torch.Tensor) -> torch.Tensor:
         """Quantize values to nearest centroid indices."""

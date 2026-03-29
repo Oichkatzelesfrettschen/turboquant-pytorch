@@ -451,11 +451,10 @@ class TurboQuantKVCache:
         key_bits = int(n_key_vecs * key_quant_bits) + n_qjl * 1 + n_norms * 16
 
         value_quant_bits = self.value_quantizer.d * self.value_quantizer._quantizer.bits_per_dimension()
-        n_val_vecs = sum(1 for c in self.value_cache for _ in [c])  # count entries
+        n_val_vecs = n_key_vecs  # same number of K and V vectors per append
         value_bits = int(n_val_vecs * value_quant_bits) if self.value_cache else 0
 
-        total_elements = (n_key_vecs + n_val_vecs) * self.d_key  # approximate
-        fp16_equivalent = total_elements * 16
+        fp16_equivalent = (n_key_vecs * self.d_key + n_val_vecs * self.d_value) * 16
 
         total = key_bits + value_bits
         return {

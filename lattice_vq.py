@@ -89,6 +89,7 @@ class ScalarLloydMaxQuantizer(VectorQuantizer):
 
     def to(self, device: str) -> "ScalarLloydMaxQuantizer":
         self.centroids = self.centroids.to(device)
+        self._boundaries = self._boundaries.to(device)
         self.device = device
         return self
 

@@ -142,17 +142,10 @@ class TurboQuantCompressorV2:
             "nsn_state": nsn_state,
             "shape": (B, H, S, D),
         }
-        # Backward compat: callers using the old API key "qjl_signs"
-        # get the unpacked signs transparently
-        if use_sign_pack and "packed" in sign_data:
-            from .sign_pack import unpack_signs as _unpack
-            _d = sign_data["d"]
-            _packed = sign_data["packed"]
-            _B, _H, _S = _packed.shape[:3]
-            result["qjl_signs"] = _unpack(
-                _packed.reshape(-1, _packed.shape[-1]), _d
-            ).reshape(_B, _H, _S, _d)
-        elif "unpacked" in sign_data:
+        # Backward compat: "qjl_signs" key available but NOT eagerly unpacked.
+        # Callers should use sign_data directly. The qjl_signs key is populated
+        # only when sign_pack is disabled (to avoid negating the memory savings).
+        if not use_sign_pack and "unpacked" in sign_data:
             result["qjl_signs"] = sign_data["unpacked"]
         return result
 
