@@ -1,0 +1,31 @@
+Title: Structured Rotations and Lattice Quantization for KV Cache
+Compression via Cayley-Dickson Algebra
+
+Abstract (250 words max for MICRO):
+
+Key-value (KV) cache memory dominates long-context LLM inference cost.
+TurboQuant (ICLR 2026) addresses this via random orthogonal rotation,
+per-coordinate Lloyd-Max quantization, and 1-bit QJL residual correction.
+We identify three limitations: O(d^2) Haar rotation cost, scalar
+quantization ignoring vector structure, and no pre-processing for the
+hostile channel-outlier distribution of real KV caches.
+
+We introduce a pipeline combining (1) Normalize-Shift-Normalize (NSN)
+pre-processing that transforms channel-outlier distributions into
+near-N(0,1/d), enabling optimal Lloyd-Max codebook utilization;
+(2) Walsh-Hadamard rotation materialized as a dense matrix for cuBLAS
+GEMM at full GPU throughput with O(d) parameter storage; and (3)
+bit-packed QJL sign storage for 69% memory reduction. We ground these
+techniques in a unified algebraic framework connecting Cayley-Dickson
+algebras, Clifford algebras, E8 lattice quantization, and the
+Barnes-Wall lattice hierarchy.
+
+Ablation on Qwen2.5-3B and Mistral-7B KV caches shows NSN is the
+dominant contributor (+136 basis points cosine similarity, +25
+percentage points top-1 attention match), while structured rotation
+provides formal isometry guarantees and storage efficiency. Our
+full-stack pipeline achieves 0.9985 attention cosine similarity (vs
+0.9849 vanilla) with 69% memory reduction. We formally verify 30 of
+36 algebraic properties via Z3 SMT solver and identify the
+Cariow-Hadamard duality between structured rotation and algebraic
+multiplication, opening paths to fused hardware implementations.
