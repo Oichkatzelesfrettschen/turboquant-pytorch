@@ -4,25 +4,30 @@ Tests MSE distortion bounds, inner product accuracy, and compression ratios
 against theoretical predictions from the paper.
 """
 
-import torch
 import math
 import time
-import os
-import sys
-import importlib.util
 
-# Import as package to support relative imports in turboquant.py
-_pkg_dir = os.path.dirname(os.path.abspath(__file__))
-_spec = importlib.util.spec_from_file_location(
-    "turboquant",
-    os.path.join(_pkg_dir, "__init__.py"),
-    submodule_search_locations=[_pkg_dir],
-)
-_turboquant = importlib.util.module_from_spec(_spec)
-sys.modules["turboquant"] = _turboquant
-_spec.loader.exec_module(_turboquant)
+import torch
 
-from turboquant import TurboQuantMSE, TurboQuantProd, TurboQuantKVCache, LloydMaxCodebook
+# conftest.py bootstraps the turboquant package for pytest.
+# When running standalone (python test_turboquant.py), the __main__ block
+# below handles the import. Do NOT duplicate the importlib shim here.
+try:
+    from turboquant import TurboQuantMSE, TurboQuantProd, TurboQuantKVCache, LloydMaxCodebook
+except ImportError:
+    import importlib.util
+    import os
+    import sys
+    _pkg_dir = os.path.dirname(os.path.abspath(__file__))
+    _spec = importlib.util.spec_from_file_location(
+        "turboquant",
+        os.path.join(_pkg_dir, "__init__.py"),
+        submodule_search_locations=[_pkg_dir],
+    )
+    _turboquant = importlib.util.module_from_spec(_spec)
+    sys.modules["turboquant"] = _turboquant
+    _spec.loader.exec_module(_turboquant)
+    from turboquant import TurboQuantMSE, TurboQuantProd, TurboQuantKVCache, LloydMaxCodebook
 
 
 def test_lloyd_max_codebook():
@@ -77,6 +82,7 @@ def test_mse_quantizer():
 
         print(f"  bits={bits}: MSE={mse:.6f}, theory_bound={theoretical_bound:.6f}, "
               f"ratio={ratio:.3f} [{status}]")
+        assert ratio <= 2.0, f"MSE ratio {ratio:.3f} exceeds 2x theoretical bound at {bits}-bit"
 
     print()
 
@@ -119,6 +125,8 @@ def test_inner_product_unbiasedness():
 
         print(f"  bits={bits}: bias={bias:+.6f}, RMSE={rmse:.6f}, "
               f"corr={correlation:.4f}, theory_D={theoretical_distortion:.6f}")
+        assert abs(bias) < 0.1, f"QJL bias {bias:.4f} exceeds 0.1 at {bits}-bit"
+        assert correlation > 0.5, f"QJL correlation {correlation:.4f} below 0.5 at {bits}-bit"
 
     print()
 
@@ -184,6 +192,8 @@ def test_kv_cache():
         scores = cache.attention_scores(query)
         print(f"           attention scores shape: {scores.shape}, "
               f"range=[{scores.min():.3f}, {scores.max():.3f}]")
+        assert scores.numel() == seq_len, f"Attention scores count mismatch: {scores.numel()} vs {seq_len}"
+        assert usage["compression_ratio"] > 1.0, "Compression ratio must exceed 1x"
 
     print()
 
@@ -230,6 +240,8 @@ def test_needle_in_haystack():
             status = "EXACT" if found else ("TOP-5" if in_top5 else "MISS")
             print(f"  bits={bits}, seq={seq_len:>5d}: top1={top_idx:>5d} "
                   f"(needle={needle_pos:>5d}) [{status}]")
+            if bits >= 3:
+                assert in_top5, f"Needle missed top-5 at {bits}-bit, seq={seq_len}"
 
     print()
 

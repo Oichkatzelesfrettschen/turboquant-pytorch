@@ -54,7 +54,8 @@ py-modules = [
 testpaths = ["."]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short --ignore=__init__.py"
+python_classes = ["Test*"]
+addopts = "-v --tb=short --import-mode=importlib"
 filterwarnings = [
     "default",
     "ignore::FutureWarning",

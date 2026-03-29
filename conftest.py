@@ -14,6 +14,7 @@ import sys
 
 # Prevent pytest from collecting __init__.py as a test module
 collect_ignore = ["__init__.py"]
+collect_ignore_glob = ["__init__*"]
 
 # Bootstrap the package if not already importable
 if "turboquant" not in sys.modules:
@@ -26,6 +27,13 @@ if "turboquant" not in sys.modules:
     _mod = importlib.util.module_from_spec(_spec)
     sys.modules["turboquant"] = _mod
     _spec.loader.exec_module(_mod)
+
+
+def pytest_ignore_collect(collection_path, config):
+    """Prevent pytest from treating __init__.py as importable test module."""
+    if collection_path.name == "__init__.py":
+        return True
+    return False
 
 
 def pytest_collect_file(parent, file_path):
