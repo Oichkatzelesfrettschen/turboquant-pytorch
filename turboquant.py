@@ -53,6 +53,9 @@ def _make_rotation(
     if isinstance(rotation, str) and rotation.startswith("cd"):
         block_dim = int(rotation[2:])
         return CDRotation(d, block_dim=block_dim, seed=seed, device=device)
+    if rotation == "hybrid":
+        from .hybrid_pipeline import HybridWHTCDRotation
+        return HybridWHTCDRotation(d, seed=seed, device=device)
     if rotation == "e8block":
         from .e8_rotation import E8BlockRotation
         return E8BlockRotation(d, seed=seed, device=device)

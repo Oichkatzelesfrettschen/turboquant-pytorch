@@ -76,6 +76,12 @@ from .algebra_foundations import (
     barnes_wall_connection, enumerate_methods,
 )
 
+# Hybrid synthesis pipeline (NSN + WHT global + CD block + sign packing)
+from .hybrid_pipeline import (
+    HybridWHTCDRotation, AdaptivePerHeadRotation,
+    hybrid_compress, hybrid_attention_scores,
+)
+
 # cuBLAS-accelerated WHT rotation + Triton quantization kernels
 from .triton_kernels import CuBLASWHTRotation
 
