@@ -30,6 +30,7 @@ from turboquant.formal_verify import (
     prove_quaternion_non_commutativity,
     prove_octonion_right_alternativity,
     prove_octonion_non_associativity,
+    prove_lagrange_optimality,
     prove_cd_norm_is_real,
     prove_wht_materialized_equals_butterfly,
     prove_hadamard_orthogonality,
@@ -136,3 +137,6 @@ class TestZ3Proofs:
 
     def test_lloyd_max_boundaries_sorted(self):
         prove_lloyd_max_boundaries_sorted()
+
+    def test_lagrange_optimality(self):
+        prove_lagrange_optimality()
