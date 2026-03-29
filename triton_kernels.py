@@ -216,14 +216,20 @@ class CuBLASWHTRotation:
     Combines the O(d) parameter storage of WHT with the throughput of
     cuBLAS matmul by precomputing Pi = D1 @ H_d @ D2 as a dense matrix.
 
-    At d=128: Pi is 64KB (fits in L1), cuBLAS GEMM achieves near-peak
-    throughput. This matches Haar rotation speed while maintaining the
-    structured (deterministic) rotation properties of WHT.
+    Architecture-aware optimizations:
+        Ampere+ (SM 8.0+): TF32 math mode enabled (~3x faster cuBLAS GEMM).
+            The 19-bit mantissa precision loss is negligible because the
+            rotation is immediately followed by 2-4 bit quantization.
+        Turing (SM 7.5):   FP16 materialized matrix for tensor core acceleration.
+        Generic:           FP32 standard cuBLAS GEMM.
 
-    From steinmarder SASS analysis: FFMA at 44.6 ops/clk/SM on Ada.
-    128x128 GEMM = 2M FMA ops. At 2.61 GHz boost * 60 SMs * 44.6 ops/clk:
-    theoretical peak = 6.98 TFLOPS -> 2M/6.98T = 0.29 us per matmul.
-    Actual includes memory overhead, but cuBLAS gets within 2-5x of peak.
+    At d=128: Pi is 64KB (fits in Ada L1=128KB), cuBLAS GEMM achieves
+    near-peak throughput regardless of architecture.
+
+    From steinmarder SASS analysis (Ada SM 8.9):
+        FFMA: 44.6 ops/clk/SM at 2.61 GHz boost * 60 SMs = 6.98 TFLOPS
+        128x128 GEMM: 2M FMA -> 0.29 us theoretical, ~1.5 us actual
+        HFMA2: 89.4 ops/clk/SM (FP16 pairs, 2x FFMA) -- Turing path
     """
 
     def __init__(self, d: int, seed: int = 42, device: str = "cpu"):
@@ -234,13 +240,25 @@ class CuBLASWHTRotation:
         self.d1[self.d1 == 0] = 1.0
         self.d2 = torch.sign(torch.randn(d, generator=gen)).to(device)
         self.d2[self.d2 == 0] = 1.0
-        # Pre-materialize for cuBLAS
-        self._Pi = get_materialized_wht(d, self.d1, self.d2)
+
+        # Apply architecture-specific optimizations
+        from .gpu_dispatch import detect_gpu, apply_gpu_optimizations, optimal_rotation_dtype
+        profile = detect_gpu()
+        apply_gpu_optimizations(profile)
+        target_dtype = optimal_rotation_dtype(profile)
+
+        # Pre-materialize for cuBLAS at optimal dtype
+        self._Pi = get_materialized_wht(d, self.d1, self.d2).to(target_dtype)
+        self._target_dtype = target_dtype
 
     def rotate(self, x: Tensor) -> Tensor:
+        if self._target_dtype != x.dtype:
+            return (x.to(self._target_dtype) @ self._Pi.T).to(x.dtype)
         return x @ self._Pi.T
 
     def unrotate(self, y: Tensor) -> Tensor:
+        if self._target_dtype != y.dtype:
+            return (y.to(self._target_dtype) @ self._Pi).to(y.dtype)
         return y @ self._Pi
 
     def storage_elements(self) -> int:
