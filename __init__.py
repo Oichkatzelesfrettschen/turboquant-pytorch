@@ -67,5 +67,14 @@ from .nsn_preprocess import (
     PrecisionWindows,
 )
 
+# Cariow factorization analysis
+from .cariow import MultCountRecord, mult_count_table, theoretical_speedup_vs_dimension
+
+# Unified algebraic foundations
+from .algebra_foundations import (
+    DIVISION_ALGEBRAS, CD_TOWER, EXCEPTIONAL_ALGEBRAS,
+    barnes_wall_connection, enumerate_methods,
+)
+
 # Smart configuration presets
 from .config import TurboQuantConfig, KVCacheConfig
