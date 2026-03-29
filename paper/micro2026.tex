@@ -811,6 +811,15 @@ $d$ int8 values ($d$ bytes per vector) with $\lceil d/64 \rceil$
 int64 words ($d/8$ bytes). At $d=128$: 128\,B $\to$ 16\,B per
 vector, an $8\times$ reduction on this component.
 
+\paragraph{Free bits.}
+With int8 index storage, the MSE quantization indices
+occupy the same space whether encoding 4, 8, or 16 codebook levels.
+In practice, upgrading from 3-bit to 4-bit (8 to 16 levels) improves
+average cosine from 0.961 to 0.989 on Qwen2.5-3B---a $+2.8$\,pp
+gain at zero additional storage cost. The ``bit-width'' parameter
+thus controls codebook granularity, not storage, when indices are
+stored as bytes rather than bit-packed.
+
 \subsection{RCA: Why Rotation Choice Matters Less Than Expected}
 
 The compressor normalizes each vector to unit norm before rotation.

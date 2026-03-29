@@ -186,3 +186,61 @@ class AdaptiveBitAllocator:
                 b: bits_list.count(b) for b in sorted(set(bits_list))
             },
         }
+
+
+def allocate_per_layer_bits(
+    cache,
+    total_budget: float = 3.0,
+    min_bits: int = 2,
+    max_bits: int = 4,
+) -> List[int]:
+    """
+    Calibration-free per-layer bit allocation based on key variance.
+
+    Layers with low key variance are harder to quantize (proportionally
+    more noise) and get more bits. Layers with high key variance have
+    more room for quantization error and get fewer bits.
+
+    Derived from per-layer analysis on Qwen2.5-3B (36 layers):
+    - L22 (worst cosine 0.954): lowest variance (2.64)
+    - L0 (best cosine 0.976): highest variance (236)
+    - Correlation(cosine, 1/variance) = -0.558
+
+    Args:
+        cache: DynamicCache from model forward pass
+        total_budget: average bits across all layers
+        min_bits: floor
+        max_bits: ceiling
+
+    Returns:
+        List of per-layer bit allocations.
+    """
+    n_layers = len(cache.layers) if hasattr(cache, 'layers') else len(cache)
+    variances = []
+
+    for li in range(n_layers):
+        if hasattr(cache, 'layers'):
+            keys = cache.layers[li].keys.float()
+        else:
+            keys = cache[li][0].float()
+        variances.append(keys.var().item())
+
+    # Lower variance = harder to quantize = needs more bits
+    # Score = 1/variance (normalized)
+    inv_var = [1.0 / (v + 1e-8) for v in variances]
+    total_inv = sum(inv_var)
+
+    # Allocate: distribute budget proportional to difficulty
+    # Start everyone at min_bits, then distribute extra budget
+    bits = [min_bits] * n_layers
+    extra_budget = int(total_budget * n_layers) - min_bits * n_layers
+
+    # Sort layers by difficulty (hardest first)
+    difficulty_order = sorted(range(n_layers), key=lambda i: inv_var[i], reverse=True)
+
+    for li in difficulty_order:
+        while bits[li] < max_bits and extra_budget > 0:
+            bits[li] += 1
+            extra_budget -= 1
+
+    return bits
