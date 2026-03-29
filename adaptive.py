@@ -227,4 +227,8 @@ def allocate_per_layer_bits(
             keys = cache[li][0].float()
         variances.append(keys.var().item())
 
-    return unified_bit_allocation(variances, total_budget, min_bits=min_bits, max_bits=max_bits)
+    # Use cosine metric: for attention quality, low-variance layers need
+    # more bits (they contribute proportionally more to cosine similarity).
+    return unified_bit_allocation(
+        variances, total_budget, min_bits=min_bits, max_bits=max_bits, metric="cosine",
+    )

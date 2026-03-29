@@ -113,11 +113,14 @@ def spectral_bit_allocation(
     max_bits: int = 8,
 ) -> Tensor:
     """
-    JPEG-style adaptive bit allocation based on coordinate energy.
+    Per-coordinate bit allocation via Lagrange-optimal rate-distortion.
 
-    Coordinates with higher variance/energy get more bits, low-energy
-    coordinates get fewer bits. This is optimal for independent Gaussian
-    coordinates with different variances (reverse water-filling).
+    Uses the quantization force framework: the closed-form Lagrange solution
+    b_r = b_mean + (1/(2*ln(4))) * ln(sigma_r^2 / sigma_mean^2) replaces
+    the previous ad-hoc log-energy proportional heuristic.
+
+    For independent Gaussian coordinates (post-rotation), this IS the
+    optimal reverse water-filling solution from rate-distortion theory.
 
     Args:
         x: rotated vectors, shape (n, d)
@@ -128,40 +131,18 @@ def spectral_bit_allocation(
     Returns:
         Per-coordinate bit allocation, shape (d,), integer values.
     """
+    from .quantization_force import unified_bit_allocation
+
     d = x.shape[-1]
     energy = spectral_energy(x)
+    variances = energy.tolist()  # per-coord variance = per-coord energy for mean-0
 
-    # Reverse water-filling: allocate proportional to log(energy)
-    log_energy = torch.log(energy.clamp(min=1e-20))
-    log_energy = log_energy - log_energy.min()  # shift to non-negative
+    avg_bits = total_bits / d
+    bits_list = unified_bit_allocation(
+        variances, avg_bits, min_bits=min_bits, max_bits=max_bits,
+    )
 
-    # Normalize to budget
-    if log_energy.sum() > 0:
-        allocation = log_energy / log_energy.sum() * total_bits
-    else:
-        allocation = torch.full((d,), total_bits / d, device=x.device)
-
-    # Round to integers with budget constraint
-    allocation = allocation.clamp(min=min_bits, max=max_bits).round().int()
-
-    # Adjust to match budget
-    diff = total_bits - allocation.sum().item()
-    if diff > 0:
-        # Add bits to highest-energy coordinates
-        sorted_idx = energy.argsort(descending=True)
-        for i in range(int(diff)):
-            idx = sorted_idx[i % d]
-            if allocation[idx] < max_bits:
-                allocation[idx] += 1
-    elif diff < 0:
-        # Remove bits from lowest-energy coordinates
-        sorted_idx = energy.argsort()
-        for i in range(int(-diff)):
-            idx = sorted_idx[i % d]
-            if allocation[idx] > min_bits:
-                allocation[idx] -= 1
-
-    return allocation
+    return torch.tensor(bits_list, dtype=torch.int32, device=x.device)
 
 
 def rotation_quality_score(x_original: Tensor, x_rotated: Tensor) -> Dict[str, float]:
