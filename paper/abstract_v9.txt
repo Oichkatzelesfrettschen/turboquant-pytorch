@@ -1,0 +1,41 @@
+=== ITERATION 9: Frame as architecture paper. MICRO angle. ===
+
+Title: Architecture-Aware KV Cache Quantization:
+Distribution Normalization with Structured Rotation Dispatch
+
+KV cache memory dominates long-context LLM inference and scales
+linearly with context length. We present an architecture-aware
+quantization pipeline with three contributions:
+
+First, we show that per-channel variance ratios up to 423x in real
+KV caches defeat Gaussian-optimal codebooks. Normalize-Shift-Normalize
+(NSN) pre-processing reduces this ratio to 1.01x, yielding +136
+basis points attention cosine and +25pp top-1 match on Qwen2.5-3B
+and Mistral-7B -- the dominant quality contribution in our ablation.
+
+Second, we implement architecture-aware dispatch: materialized
+Walsh-Hadamard rotation via cuBLAS with TF32 auto-enable (3x on
+Ampere+) at 64x fewer parameters than dense Haar, and bit-packed
+QJL signs reducing attention score bandwidth 7.5x (256B to 34B per
+score at 3-bit). GPU dispatch selects math mode across five
+architecture tiers (Hopper through Turing).
+
+Third, we explore the rotation design space through Cayley-Dickson
+algebra, proving isometric guarantees for structured block rotations
+(30/36 properties SMT-verified) and identifying shared Hadamard
+butterfly structure between rotation and algebraic multiplication.
+Surprisingly, rotation choice contributes less than 1bp regardless of
+structure -- NSN dominates quality while architecture-aware dispatch
+determines throughput.
+
+CRITIQUE 9:
+- MUCH better for MICRO: "architecture-aware" is in the title
+- Three clear contributions: quality (NSN), architecture (dispatch),
+  theory (CD algebra)
+- 7.5x bandwidth is contextualized (per-score, from/to specified)
+- TF32 and 5-tier dispatch are concrete hardware contributions
+- The "surprising" finding is now framed as architectural insight:
+  "NSN dominates quality while dispatch determines throughput"
+- 199 words
+- This is the strongest version yet
+- Only weakness: still no perplexity (fundamental, but can't fake it)

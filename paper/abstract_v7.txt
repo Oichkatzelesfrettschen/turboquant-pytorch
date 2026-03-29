@@ -1,0 +1,42 @@
+=== ITERATION 7: Fix the "ablation study" framing. Lead with insight. ===
+
+PROBLEMS ADDRESSED:
+- Remove "Ablation Study" from title (death at MICRO)
+- Reframe: the insight IS the contribution, not the ablation
+- Integrate the algebra as enabling the systematic exploration
+- Frame for Tushar Krishna (distribution-aware, HW implications)
+
+Title: Distribution-Aware KV Cache Compression via Algebraically
+Structured Quantization Pipelines
+
+KV cache memory dominates long-context LLM inference. We present a
+distribution-aware quantization pipeline that achieves 0.9985 attention
+cosine similarity (vs 0.9849 for TurboQuant) with 69% memory reduction
+by addressing the root cause of quality loss: the 423x per-channel
+variance ratio in real KV caches, which defeats codebooks designed
+for Gaussian distributions.
+
+Our key insight is that distribution normalization -- not rotation or
+codebook design -- determines quantization quality. We demonstrate this
+through a systematic decomposition: Normalize-Shift-Normalize (NSN)
+contributes +136 basis points cosine similarity and +25pp top-1 match,
+while rotation method (Haar, Walsh-Hadamard, Cayley-Dickson block)
+contributes less than 1bp regardless of algebraic structure.
+
+Based on this finding, we construct an optimized pipeline:
+NSN pre-processing, materialized Walsh-Hadamard rotation for cuBLAS
+throughput at 64x fewer parameters, and bit-packed QJL residual signs
+(8x sign storage reduction). We explore the rotation design space
+through Cayley-Dickson algebra, proving isometric guarantees for
+structured block rotations and identifying shared Hadamard butterfly
+structure between rotation and algebraic multiplication that enables
+fused hardware implementations.
+
+CRITIQUE 7:
+- Better: title says "distribution-aware" (Krishna's language)
+- Better: leads with the result, then the insight, then the pipeline
+- Better: rotation/algebra integrated as "design space exploration"
+- BUT: 197 words, could be tighter
+- "fused hardware implementations" is still speculative with no data
+- The last sentence is doing too much -- cut or simplify
+- Should we quantify the memory bandwidth benefit?

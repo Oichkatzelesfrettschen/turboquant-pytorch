@@ -43,7 +43,7 @@
 
 \begin{document}
 
-\title{NSN-TurboQuant: Distribution-Aware KV Cache Compression\\with 7.5$\times$ Bandwidth Reduction}
+\title{Architecture-Aware KV Cache Quantization:\\Distribution Normalization with Structured Rotation Dispatch}
 
 \begin{CCSXML}
 <ccs2012>
@@ -67,29 +67,30 @@
 Walsh-Hadamard transform, E8 lattice, formal verification}
 
 \begin{abstract}
-LLM key-value (KV) cache memory grows linearly with context length
-and dominates long-context inference cost. We show that the primary
-quality bottleneck in KV cache quantization is distribution mismatch:
-real caches exhibit per-channel outliers with $423\times$ variance ratio,
-while optimal scalar codebooks assume Gaussian inputs.
+KV cache memory dominates long-context LLM inference, scaling
+linearly with context length. We present an architecture-aware
+quantization pipeline with three contributions.
 
-We extend TurboQuant (ICLR 2026) with three techniques:
-(1)~Normalize-Shift-Normalize (NSN) pre-processing reduces
-variance ratio to $1.01\times$, enabling Lloyd-Max codebooks to operate
-at their design optimum ($+$136 basis points attention cosine
-similarity, $+$25 percentage points top-1 match);
-(2)~materialized Walsh-Hadamard rotation via cuBLAS GEMM achieves
-561M vectors/second with TF32 at $64\times$ fewer parameters than dense
-Haar rotation; (3)~bit-packed QJL signs reduce residual correction
-storage $8\times$, yielding $7.5\times$ memory bandwidth reduction per
-attention score computation.
+First, we identify that per-channel variance ratios up to $423\times$ in
+real KV caches render Gaussian-optimal codebooks suboptimal.
+Normalize-Shift-Normalize pre-processing reduces this ratio to
+$1.01\times$, improving attention cosine similarity by 136 basis points
+and top-1 match by 25 percentage points on Qwen2.5-3B and
+Mistral-7B---the dominant quality factor in our ablation.
 
-Ablation on Qwen2.5-3B and Mistral-7B confirms NSN as the dominant
-contributor---rotation choice adds less than 1\,bp. The full pipeline
-achieves 0.9985 attention cosine (vs.\ 0.9849 vanilla) with 69\%
-total KV memory reduction. We ground the rotation design space in
-Cayley-Dickson algebra with 30 algebraic properties formally
-verified via SMT solver.
+Second, we implement architecture-aware execution: materialized
+Walsh-Hadamard rotation via cuBLAS with automatic TF32 dispatch
+($3\times$ throughput on Ampere+) at $64\times$ fewer parameters than dense
+Haar rotation, and bit-packed QJL signs reducing per-score
+attention bandwidth from 256\,B to 34\,B. Five-tier GPU dispatch
+(Hopper through generic) auto-selects precision modes.
+
+Third, we ground the rotation design space in Cayley-Dickson
+algebra, proving isometric guarantees for structured block
+rotations (30 properties SMT-verified). Ablation reveals a
+surprising dichotomy: distribution normalization determines
+quality ($>$99\% of gain) while architecture-aware dispatch
+determines throughput.
 \end{abstract}
 
 \maketitle
