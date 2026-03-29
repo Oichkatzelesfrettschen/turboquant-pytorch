@@ -46,9 +46,16 @@ def _make_rotation(
     if isinstance(rotation, str) and rotation.startswith("cd"):
         block_dim = int(rotation[2:])
         return CDRotation(d, block_dim=block_dim, seed=seed, device=device)
+    if rotation == "e8block":
+        from .e8_rotation import E8BlockRotation
+        return E8BlockRotation(d, seed=seed, device=device)
+    if rotation == "clifford":
+        from .clifford_rotor import CliffordRotorRotation
+        return CliffordRotorRotation(d, seed=seed, device=device)
     raise ValueError(
         f"Unknown rotation: {rotation!r}. "
-        f"Use None, 'haar', 'wht', 'cd4', 'cd8', 'cd16', or a Rotation instance."
+        f"Use None, 'haar', 'wht', 'cd4'...'cd16', 'e8block', 'clifford', "
+        f"or a Rotation instance."
     )
 
 

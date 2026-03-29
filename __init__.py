@@ -49,3 +49,12 @@ from .hierarchical import (
 
 # Sign packing (8x QJL memory reduction)
 from .sign_pack import pack_signs, unpack_signs, packed_inner_product
+
+# E8-block rotation (136x parameter reduction, KS-validated)
+from .e8_rotation import E8BlockRotation
+
+# Clifford rotor rotation (RotorQuant synthesis)
+from .clifford_rotor import CliffordRotorRotation
+
+# Smart configuration presets
+from .config import TurboQuantConfig, KVCacheConfig
