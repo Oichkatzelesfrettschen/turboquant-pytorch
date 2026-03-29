@@ -5,3 +5,9 @@ __pycache__/
 dist/
 build/
 .eggs/
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.synctex.gz

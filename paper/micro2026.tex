@@ -737,6 +737,17 @@ matches or exceeds Haar across all bit-widths on Qwen2.5-3B.
 At 4-bit, WHT achieves +4.2 percentage points higher top-1 attention
 match (80.6\% vs.\ 76.4\%), the strongest signal of quality improvement.
 
+Real inference validation on Qwen2.5-3B (36 layers, 512 tokens)
+yields average key cosine of 0.873 (2-bit), 0.961 (3-bit),
+and 0.989 (4-bit). Per-layer analysis reveals that the worst layer
+(L22, cosine 0.954 at 3-bit) has the \emph{lowest} key variance
+(2.64) and kurtosis (3.35), suggesting that low-dynamic-range keys
+are proportionally more affected by quantization noise. Paradoxically,
+layers with the highest channel variance ratio (up to $17{,}431\times$,
+L0) achieve the best cosine after NSN normalization.
+This confirms that NSN is most beneficial precisely where the
+pre-processing challenge is greatest.
+
 \subsection{Rotation Comparison With NSN}
 
 When NSN pre-processing is active, the choice of rotation has a
