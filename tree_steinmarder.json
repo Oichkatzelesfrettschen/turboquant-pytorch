@@ -1,0 +1,3147 @@
+[
+ {
+  "path": "./src/cuda_lbm/host_wrappers.cu",
+  "size": 29234,
+  "mtime": "2026-03-28 20:15"
+ },
+ {
+  "path": "./src/cuda_lbm/include/lbm_kernels.h",
+  "size": 12171,
+  "mtime": "2026-03-28 20:14"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_q16_soa.cu",
+  "size": 7291,
+  "mtime": "2026-03-28 20:14"
+ },
+ {
+  "path": "./src/editor/sm_viewport.c",
+  "size": 4804,
+  "mtime": "2026-03-28 20:10"
+ },
+ {
+  "path": "./src/editor/sm_mesh_topology.c",
+  "size": 6455,
+  "mtime": "2026-03-28 19:58"
+ },
+ {
+  "path": "./src/nerf/nerf_simd.c",
+  "size": 43230,
+  "mtime": "2026-03-28 19:51"
+ },
+ {
+  "path": "./src/denoise/bilateral_denoise.c",
+  "size": 9318,
+  "mtime": "2026-03-28 19:50"
+ },
+ {
+  "path": "./src/render/postprocess.c",
+  "size": 5638,
+  "mtime": "2026-03-28 19:40"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int8_soa_lloydmax.cu",
+  "size": 13468,
+  "mtime": "2026-03-28 19:29"
+ },
+ {
+  "path": "./src/physics/reactor_thermal.c",
+  "size": 95732,
+  "mtime": "2026-03-28 19:11"
+ },
+ {
+  "path": "./src/core/material.c",
+  "size": 4089,
+  "mtime": "2026-03-28 19:10"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int8_soa_lloydmax_pipe.cu",
+  "size": 7310,
+  "mtime": "2026-03-28 18:43"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int8_soa.cu",
+  "size": 11064,
+  "mtime": "2026-03-28 18:42"
+ },
+ {
+  "path": "./src/render/bvh.c",
+  "size": 15960,
+  "mtime": "2026-03-28 18:38"
+ },
+ {
+  "path": "./src/render/render.c",
+  "size": 36545,
+  "mtime": "2026-03-28 18:37"
+ },
+ {
+  "path": "./src/cuda_lbm/bench/lloydmax_codebook.cu",
+  "size": 11527,
+  "mtime": "2026-03-28 16:46"
+ },
+ {
+  "path": "./src/cuda_lbm/bench/bench_main.cu",
+  "size": 8190,
+  "mtime": "2026-03-28 16:42"
+ },
+ {
+  "path": "./src/cuda_lbm/bench/lloydmax_codebook.h",
+  "size": 450,
+  "mtime": "2026-03-28 16:42"
+ },
+ {
+  "path": "./src/cuda_lbm/sparse/kernels_sparse_lbm.cu",
+  "size": 8379,
+  "mtime": "2026-03-28 16:21"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_soa.cu",
+  "size": 75775,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp32_soa_cs.cu",
+  "size": 6968,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp8_soa.cu",
+  "size": 6189,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp16_soa.cu",
+  "size": 6768,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp64_soa.cu",
+  "size": 6160,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_bf16_soa.cu",
+  "size": 5649,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int16_soa.cu",
+  "size": 6546,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp8_e5m2_soa.cu",
+  "size": 6018,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int16.cu",
+  "size": 7251,
+  "mtime": "2026-03-28 16:05"
+ },
+ {
+  "path": "./src/vulkan/gpu_vulkan_demo.c",
+  "size": 163967,
+  "mtime": "2026-03-28 15:28"
+ },
+ {
+  "path": "./src/cuda_lbm/include/lbm_metrics.h",
+  "size": 6248,
+  "mtime": "2026-03-28 15:28"
+ },
+ {
+  "path": "./src/denoise/denoise.h",
+  "size": 131,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/denoise/neural_denoise.c",
+  "size": 2193,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/denoise/denoise.c",
+  "size": 2795,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/denoise/bilateral_denoise.h",
+  "size": 1113,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/denoise/onnx_denoise.c",
+  "size": 6115,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/denoise/neural_denoise.h",
+  "size": 401,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/denoise/onnx_denoise.h",
+  "size": 316,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/depth_prepass_gpu.h",
+  "size": 3635,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_bvh_lbv.h",
+  "size": 716,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_bvh_build.h",
+  "size": 813,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_obj_loader.h",
+  "size": 1313,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/depth_prepass_gpu.c",
+  "size": 10064,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_bvh_lbvh_builder.c",
+  "size": 7987,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_bvh.h",
+  "size": 367,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_bvh_lbvh_builder.h",
+  "size": 916,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_denoise.h",
+  "size": 950,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/lbvh.c",
+  "size": 7954,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_bvh_lbv.c",
+  "size": 9150,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_bvh_build.c",
+  "size": 4844,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/vulkan/gpu_obj_loader.c",
+  "size": 9934,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/cuda_lbm/include/lbm_managed_memory.h",
+  "size": 3941,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/cuda_lbm/include/host_wrappers.h",
+  "size": 1224,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/cuda_lbm/include/lbm_kernel_selector.h",
+  "size": 6741,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/cuda_lbm/bench/bench_baselines.h",
+  "size": 2170,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/sm_mt.h",
+  "size": 789,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/gbuffer_dump.c",
+  "size": 1853,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/postprocess.h",
+  "size": 561,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/sceneloader.c",
+  "size": 1080,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/gbuffer_dump.h",
+  "size": 546,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/sm_mt.c",
+  "size": 581,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/sm_main.c",
+  "size": 10262,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/gbuffer.h",
+  "size": 363,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/gbuffer.c",
+  "size": 251,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/render.h",
+  "size": 2035,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/bvh.h",
+  "size": 2336,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/render/sceneloader.h",
+  "size": 390,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/depth_hint.h",
+  "size": 7334,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/depth_hint.c",
+  "size": 27639,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/nerf_batch.c",
+  "size": 2513,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/nerf_simd_test.c",
+  "size": 14142,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/nerf_batch.h",
+  "size": 1193,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/nerf_scheduler.h",
+  "size": 943,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/nerf_simd_integration.c",
+  "size": 11176,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/nerf_simd.h",
+  "size": 4459,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/nerf/nerf_scheduler.c",
+  "size": 1706,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/Y_lang/gdt.h",
+  "size": 424,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/Y_lang/gdt.c",
+  "size": 1485,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/Y_lang/kernel.c",
+  "size": 696,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/Y_lang/sm_shm_portal.h",
+  "size": 343,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/Y_lang/sm_shm_portal.c",
+  "size": 353,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/sass_re/runners/cubin_driver_common.h",
+  "size": 3985,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/tools/smb_info.c",
+  "size": 706,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/tools/test_quad_loader_main.c",
+  "size": 2530,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/tools/QUAD_LOADER_QUICK_START.c",
+  "size": 7358,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/tools/inspect_ppm.c",
+  "size": 1680,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/tools/check_sizeof.c",
+  "size": 529,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/tools/smb_to_ppm.c",
+  "size": 1924,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/tools/test_upscale_unit.c",
+  "size": 11822,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/quantum_volume.c",
+  "size": 37549,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/quantum_volume.h",
+  "size": 6210,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/atomic_fission.h",
+  "size": 18620,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/nuclear_reaction.h",
+  "size": 6051,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/nuclear_reaction.c",
+  "size": 38976,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/test_reactor_thermal.c",
+  "size": 5864,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/atomic_fission.c",
+  "size": 131657,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/reactor_thermal.h",
+  "size": 20482,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/physics/quantum_demo_main.c",
+  "size": 104937,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/upscale/sm_upscale_integration_example.c",
+  "size": 16961,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/upscale/sm_upscale.c",
+  "size": 43092,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/upscale/sm_upscale.h",
+  "size": 14330,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/editor/sm_mesh_edit.c",
+  "size": 53839,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/editor/sm_obj_exporter.h",
+  "size": 390,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/editor/sm_edit_mode.c",
+  "size": 18676,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/editor/sm_mesh_topology.h",
+  "size": 1485,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/editor/sm_360_engine_integration.c",
+  "size": 13667,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/editor/editor.c",
+  "size": 7570,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/editor/sm_obj_exporter.c",
+  "size": 691,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/third_party/stb_image_write.h",
+  "size": 71220,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/image.c",
+  "size": 4739,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/vec4.c",
+  "size": 881,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/ray.c",
+  "size": 382,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/vec4.h",
+  "size": 550,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/vec2.h",
+  "size": 1369,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/vec2.c",
+  "size": 2199,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/primitives.c",
+  "size": 2716,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/vec3.c",
+  "size": 1703,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/image.h",
+  "size": 584,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/material.h",
+  "size": 1263,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/color.h",
+  "size": 147,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/vec3.h",
+  "size": 646,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/color.c",
+  "size": 129,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/triangle.h",
+  "size": 119,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/ray.h",
+  "size": 355,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/primitives.h",
+  "size": 2079,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/sphere.c",
+  "size": 1955,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/camera.h",
+  "size": 408,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/sphere.h",
+  "size": 411,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/camera.c",
+  "size": 919,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/core/triangle.c",
+  "size": 4005,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./experimental/sm_packet.c",
+  "size": 10222,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./experimental/sm_wavefront.c",
+  "size": 2038,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./experimental/sm_packet.h",
+  "size": 1838,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./experimental/sm_wavefront.h",
+  "size": 2486,
+  "mtime": "2026-03-28 15:15"
+ },
+ {
+  "path": "./src/cuda_lbm/test/test_conservation.cu",
+  "size": 1153,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/test/test_main.cu",
+  "size": 1774,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/test/test_regression.cu",
+  "size": 1678,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/test/test_mrt_stability.cu",
+  "size": 7699,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/bench/bench_validate.cu",
+  "size": 7042,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/bench/bench_harness.cu",
+  "size": 7743,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_bf16.cu",
+  "size": 12707,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp4.cu",
+  "size": 9231,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp64.cu",
+  "size": 9552,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp8_e5m2.cu",
+  "size": 7220,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_bf16_soa_bf162.cu",
+  "size": 8740,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_box_counting.cu",
+  "size": 6761,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int4.cu",
+  "size": 10490,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp16.cu",
+  "size": 7695,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_tensor_core.cu",
+  "size": 8136,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp8.cu",
+  "size": 7215,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int8_soa_mrt_aa.cu",
+  "size": 11283,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_fp16_soa_half2.cu",
+  "size": 7964,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_inv_tau_precompute.cu",
+  "size": 2516,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/sparse/kernels_sparse_map.cu",
+  "size": 4129,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_dd.cu",
+  "size": 13471,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/cuda_lbm/kernels_int8.cu",
+  "size": 8916,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_hostreg_probe_runner.cu",
+  "size": 3103,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_redsys_async_profile_safe_runner.cu",
+  "size": 4667,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/texture_surface_runner.cu",
+  "size": 27791,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_warp_atomic_cache_profile_safe_runner.cu",
+  "size": 3801,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_hmm_features_runner.cu",
+  "size": 5308,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_warp_atomic_cache_runner.cu",
+  "size": 3759,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_greenboost_path_probe_runner.cu",
+  "size": 4482,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/optix_real_pipeline_runner.cu",
+  "size": 11297,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_blockred_warp_atomg64sys_ops_profile_depth_safe_runner.cu",
+  "size": 4863,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_greenboost_oversub_runner.cu",
+  "size": 10653,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_greenboost_features_runner.cu",
+  "size": 4284,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_blockred_warp_atomg64sys_ops_store_profile_safe_runner.cu",
+  "size": 5737,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_divergent_atomg64sys_profile_safe_runner.cu",
+  "size": 4981,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_hostreg_symbol_probe_runner.cu",
+  "size": 4111,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/optix_callable_pipeline_runner.cu",
+  "size": 12996,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/nvenc_nvdec_pipeline_runner.cu",
+  "size": 11230,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_divergent_blockred_warp_atomg64sys_ops_store_profile_depth_safe_runner.cu",
+  "size": 5833,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/tiling_hierarchical_runner.cu",
+  "size": 3176,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_blockred_warp_atomg64sys_ops_profile_depth_safe_runner.cu",
+  "size": 5065,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_blockred_warp_atomg64sys_ops_runner.cu",
+  "size": 4998,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_divergent_atomg64sys_profile_depth_safe_runner.cu",
+  "size": 5006,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/cooperative_launch_runner.cu",
+  "size": 2164,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_blockred_warp_atomg64sys_ops_profile_safe_runner.cu",
+  "size": 5041,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_divergent_blockred_warp_atomg64sys_ops_profile_safe_runner.cu",
+  "size": 4818,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_atomg64sys_ops_profile_safe_runner.cu",
+  "size": 4688,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_divergent_blockred_warp_atomg64sys_ops_store_profile_safe_runner.cu",
+  "size": 5662,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/dp4a_signedness_runner.cu",
+  "size": 2071,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/mbarrier_runner.cu",
+  "size": 2132,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/optix_real_pipeline_device.cu",
+  "size": 822,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/depbar_explicit_runner.cu",
+  "size": 1126,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_divergent_blockred_warp_atomg64sys_ops_store_profile_safe_runner.cu",
+  "size": 5797,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/barrier_coop_groups_runner.cu",
+  "size": 1505,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/cudnn_conv_mining_runner.cu",
+  "size": 6529,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_blockred_warp_atomg64sys_ops_store_profile_depth_safe_runner.cu",
+  "size": 5773,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/dlto_cross_tu_runner.cu",
+  "size": 3006,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_blockred_warp_atomg64sys_ops_store_profile_safe_runner.cu",
+  "size": 5602,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_atomg64sys_ops_profile_depth_safe_runner.cu",
+  "size": 4724,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/ofa_pipeline_runner.cu",
+  "size": 5379,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/barrier_arrive_wait_runner.cu",
+  "size": 1862,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/optix_callable_pipeline_device.cu",
+  "size": 1203,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_uniform_divergent_blockred_warp_atomg64sys_ops_profile_depth_safe_runner.cu",
+  "size": 5113,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_perf_features_runner.cu",
+  "size": 11335,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_warp_atomic_cache_profile_depth_safe_runner.cu",
+  "size": 3879,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/cp_async_zfill_runner.cu",
+  "size": 4272,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_greenboost_driver_runner.cu",
+  "size": 4591,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/combo_blockred_warp_atomg64sys_ops_store_runner.cu",
+  "size": 5653,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/runners/runtime_greenboost_perf_runner.cu",
+  "size": 10391,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/instant_ngp/ngp_validate.cu",
+  "size": 19815,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/instant_ngp/volume_render.cu",
+  "size": 15264,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/instant_ngp/mlp_forward.cu",
+  "size": 13734,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/instant_ngp/hashgrid_encode.cu",
+  "size": 15044,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_ushf_u64_hi_final.cu",
+  "size": 2101,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tensor_all_widths.cu",
+  "size": 9597,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mbarrier/probe_mbarrier_core.cu",
+  "size": 1687,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/barrier_sync2/probe_bar_red_predicate.cu",
+  "size": 1057,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/barrier_sync2/probe_bar_latency_chain.cu",
+  "size": 761,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/barrier_sync2/probe_depbar_explicit.cu",
+  "size": 584,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/barrier_sync2/probe_bar_warp_specific.cu",
+  "size": 596,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tiling_diagonal.cu",
+  "size": 3272,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_divergent_blockred_warp_atomg64sys_ops_store_profile_depth_safe.cu",
+  "size": 9474,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_dp4a_signedness.cu",
+  "size": 1868,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_red_sys_scope.cu",
+  "size": 899,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_atom_inc_dec.cu",
+  "size": 978,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_red_variants.cu",
+  "size": 2524,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_atoms_float.cu",
+  "size": 421,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_atoms_latency_sweep.cu",
+  "size": 2528,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_atoms_basic_ops.cu",
+  "size": 969,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_atoms_unsigned.cu",
+  "size": 689,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_redux_all_ops.cu",
+  "size": 770,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_atom_relaxed.cu",
+  "size": 1155,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/atomic_sweep/probe_atom_sys_scope_all.cu",
+  "size": 1450,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_r2ur_debug_path.cu",
+  "size": 1045,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_blockred_warp_atomg64sys_ops_profile_depth_safe.cu",
+  "size": 7761,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_warp_reduction.cu",
+  "size": 5896,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_predicate_bank_bytecarriers_exact.cu",
+  "size": 2051,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/texture_surface/probe_tmu_behavior.cu",
+  "size": 7400,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_sx32_mix.cu",
+  "size": 1178,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_predicate_uniform_fsm_exact.cu",
+  "size": 4941,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tensor_deep.cu",
+  "size": 7522,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_divergent_blockred_warp_atomg64sys_ops_store_profile_safe.cu",
+  "size": 8279,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_warp_atomg64sys_ops_store_cache_wombo.cu",
+  "size": 4073,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uplop3_uniform_predicates.cu",
+  "size": 1624,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_nibble_packing.cu",
+  "size": 5494,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_vadd2_vsub2.cu",
+  "size": 551,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_video_selector_isa_inline_ptx.cu",
+  "size": 2282,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_video_scalar_isa_inline_ptx.cu",
+  "size": 2348,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_vabs2_vabs4.cu",
+  "size": 458,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_vadd4_vsub4.cu",
+  "size": 548,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_vset2_vset4.cu",
+  "size": 552,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_viaddmax_viaddmin.cu",
+  "size": 1672,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_vsad.cu",
+  "size": 712,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_video_isa_inline_ptx.cu",
+  "size": 2046,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_vmax_vmin.cu",
+  "size": 1473,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/simd_video/probe_video_variant_isa_inline_ptx.cu",
+  "size": 2511,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomg_nonadd_cache_wombo.cu",
+  "size": 2579,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_r2p_byte_rehydrate_exact.cu",
+  "size": 1121,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_redsys_async_wombo.cu",
+  "size": 4609,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_interleave.cu",
+  "size": 644,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_redux.cu",
+  "size": 363,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_priority.cu",
+  "size": 277,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_hamming.cu",
+  "size": 254,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_mask_count.cu",
+  "size": 383,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_crc.cu",
+  "size": 431,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_reflect.cu",
+  "size": 323,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_ballot.cu",
+  "size": 357,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_power2.cu",
+  "size": 303,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_population.cu",
+  "size": 533,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_palindrome.cu",
+  "size": 254,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_vectorized.cu",
+  "size": 278,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_parallel.cu",
+  "size": 525,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_chain.cu",
+  "size": 510,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_log2.cu",
+  "size": 274,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_minmax.cu",
+  "size": 402,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_vectorized.cu",
+  "size": 292,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_sparse.cu",
+  "size": 262,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_diff.cu",
+  "size": 245,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_chain.cu",
+  "size": 514,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_vectorized.cu",
+  "size": 288,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_reduce.cu",
+  "size": 386,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_chain.cu",
+  "size": 468,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_deinterleave.cu",
+  "size": 621,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_saturate.cu",
+  "size": 297,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_l1norm.cu",
+  "size": 317,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_fft.cu",
+  "size": 284,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_msb.cu",
+  "size": 397,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_vectorized.cu",
+  "size": 296,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_hash.cu",
+  "size": 332,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_clamp.cu",
+  "size": 306,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_brev_tile_64bit.cu",
+  "size": 405,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_distance.cu",
+  "size": 288,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_normalize.cu",
+  "size": 359,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_scan.cu",
+  "size": 426,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_relu_int.cu",
+  "size": 278,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_64bit.cu",
+  "size": 317,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_iabs_tile_sign.cu",
+  "size": 261,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_popc_tile_bitcount_reduce.cu",
+  "size": 385,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitops_tiling/probe_clz_tile_64bit.cu",
+  "size": 379,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_memory_scope.cu",
+  "size": 3419,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_mx_microscaling.cu",
+  "size": 6318,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_predicate_bank_roundtrip_exact.cu",
+  "size": 3953,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_datapath.cu",
+  "size": 3487,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_texture_surface.cu",
+  "size": 4260,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_warp_atomg64sys_ops_store_profile_safe.cu",
+  "size": 5692,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomic_cache_wombo.cu",
+  "size": 3341,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_int16_arithmetic.cu",
+  "size": 2016,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_warp_atomic_cache_wombo.cu",
+  "size": 5961,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_mufu.cu",
+  "size": 3300,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_encoding_verify.cu",
+  "size": 7048,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_membar_variants.cu",
+  "size": 3049,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_async_copy.cu",
+  "size": 3263,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fp16_half2.cu",
+  "size": 3422,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_redsys_blockred_cache_wombo.cu",
+  "size": 2784,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tiling_scatter_gather.cu",
+  "size": 3473,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_coalescing_patterns.cu",
+  "size": 1901,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_ldmatrix_trans_inline_ptx.cu",
+  "size": 2122,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_async_sync.cu",
+  "size": 2230,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_divergent_atomg64sys_profile_depth_safe.cu",
+  "size": 7696,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_conversions.cu",
+  "size": 3129,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_bytepack.cu",
+  "size": 1756,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_blockred_warp_atomg64sys_ops_store_profile_depth_safe.cu",
+  "size": 8496,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/cudnn/probe_cudnn_conv_mining.cu",
+  "size": 623,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_cache_wombo.cu",
+  "size": 2257,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tiling_2d_stencil.cu",
+  "size": 6777,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_special_regs.cu",
+  "size": 2560,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_u64_stage_shift_exact.cu",
+  "size": 1593,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_red64sys_cache_wombo.cu",
+  "size": 1858,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_arrive_wait.cu",
+  "size": 2557,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_predicate_pressure.cu",
+  "size": 4884,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_swizzled_add.cu",
+  "size": 3678,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_int128_uint128_emulated.cu",
+  "size": 4580,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_control_flow.cu",
+  "size": 5273,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_ldg_strong_all.cu",
+  "size": 2284,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_generic_ld_st.cu",
+  "size": 696,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_param_space.cu",
+  "size": 389,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_local_spill.cu",
+  "size": 492,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_warp_shuffle_pred.cu",
+  "size": 621,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_local_all_widths.cu",
+  "size": 696,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_misaligned_vec.cu",
+  "size": 416,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_const_indexed.cu",
+  "size": 405,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_smem_bank_all.cu",
+  "size": 701,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement2/probe_dm2_type_pun.cu",
+  "size": 376,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fp64_extended.cu",
+  "size": 2233,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_vectorized_widths.cu",
+  "size": 6226,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomg64_exch_cache_wombo.cu",
+  "size": 1915,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tiling_warp_coop.cu",
+  "size": 3435,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fp8_precision.cu",
+  "size": 3954,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_cache_policy_wombo.cu",
+  "size": 12270,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_optix_host_pipeline.cu",
+  "size": 5446,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_divergent_atomg64sys_profile_safe.cu",
+  "size": 6870,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_optix_rt_core.cu",
+  "size": 8829,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_tf32_satom_fma.cu",
+  "size": 739,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_bf16_hist.cu",
+  "size": 667,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_fp16_cas_max.cu",
+  "size": 1186,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_fp8e5m2_cas.cu",
+  "size": 609,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_float4_ilp_atomic.cu",
+  "size": 710,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_mixed_i8_f16_dot.cu",
+  "size": 639,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_fp64_satom_cas.cu",
+  "size": 1106,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_divergent_atomic.cu",
+  "size": 1010,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_fp8_block_reduce.cu",
+  "size": 619,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_int128_double_cas.cu",
+  "size": 600,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_satom_latency_chain.cu",
+  "size": 946,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_redux_then_atomic.cu",
+  "size": 626,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_half2_warp_accum.cu",
+  "size": 944,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_int4_nibble_atomic.cu",
+  "size": 889,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics/probe_edge_double2_cas.cu",
+  "size": 1269,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_ushf_u64_hi_imm11_exact.cu",
+  "size": 1553,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uisetp_variant_sweep.cu",
+  "size": 1696,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_predicate_reconverge_reload.cu",
+  "size": 3796,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fp64_transcendentals.cu",
+  "size": 3574,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_stage_toggle_pipeline.cu",
+  "size": 4066,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_int_arith.cu",
+  "size": 3240,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tensor.cu",
+  "size": 2691,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_ldc_subword.cu",
+  "size": 894,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_warp_matrix_shared.cu",
+  "size": 4053,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_cache_uniform_wombo.cu",
+  "size": 7080,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_vector_pack_inline_ptx.cu",
+  "size": 4053,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fp32_special_modes.cu",
+  "size": 3519,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_bf16_arithmetic.cu",
+  "size": 3415,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fp64_arithmetic.cu",
+  "size": 3700,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tensor_tf32_m16n8k8_inline_ptx.cu",
+  "size": 3353,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_f2fp_alias_pack_inline_ptx.cu",
+  "size": 1858,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_half2_relu_inline_ptx.cu",
+  "size": 1333,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomg64_cache_wombo.cu",
+  "size": 1877,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_int8_dp4a.cu",
+  "size": 3908,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_bcd_decimal.cu",
+  "size": 3666,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomg64sys_ops_profile_safe.cu",
+  "size": 2886,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/optix/probe_optix_callable_pipeline.cu",
+  "size": 487,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/optix/probe_optix_real_pipeline.cu",
+  "size": 586,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_block_reduce.cu",
+  "size": 2740,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/cache_control/probe_ldg_cache_hints.cu",
+  "size": 1121,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/cache_control/probe_cctl_variants.cu",
+  "size": 967,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/cache_control/probe_stg_cache_hints.cu",
+  "size": 1042,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_warp_elect_activemask.cu",
+  "size": 3300,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_shfl_half2.cu",
+  "size": 393,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_shfl_modes.cu",
+  "size": 1052,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_ldg_all_widths.cu",
+  "size": 580,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_stg_cache_all.cu",
+  "size": 656,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_async_all.cu",
+  "size": 815,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_ldg_readonly_vec.cu",
+  "size": 515,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_global_to_shared.cu",
+  "size": 1000,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_cross_lane_exchange.cu",
+  "size": 766,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_ldg_cache_all.cu",
+  "size": 691,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_warp_matrix_lds.cu",
+  "size": 912,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_cp_async_ltc128b.cu",
+  "size": 3381,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_mov_variants.cu",
+  "size": 848,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_cp_async_zfill.cu",
+  "size": 3961,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_smem_broadcast.cu",
+  "size": 770,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_lds_all_widths.cu",
+  "size": 764,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_gather_scatter_idx.cu",
+  "size": 800,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_s2r_all_regs.cu",
+  "size": 1307,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_stg_all_widths.cu",
+  "size": 619,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_shfl_64bit.cu",
+  "size": 421,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_coalescing_sweep.cu",
+  "size": 867,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/data_movement/probe_dm_register_reuse.cu",
+  "size": 649,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_stage_redsys_wombo.cu",
+  "size": 3743,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_mxfp4_tile_warp_scale.cu",
+  "size": 1077,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_mxfp8_tile_stencil.cu",
+  "size": 1204,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_nf8_tile_stencil.cu",
+  "size": 1042,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_nf8_tile_decode.cu",
+  "size": 3364,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_mx_nf_compare.cu",
+  "size": 1224,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_nf8_tile_encode.cu",
+  "size": 777,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_nf4_tile_smem_lut.cu",
+  "size": 676,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_mxfp6_tile_decode.cu",
+  "size": 1819,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_mxfp8_tile_reduce.cu",
+  "size": 952,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/mx_nf_tiling/probe_mxint8_tile_matmul.cu",
+  "size": 803,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fixed_point.cu",
+  "size": 4554,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_int4_tc_atomic.cu",
+  "size": 855,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_bf162_reduce.cu",
+  "size": 783,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_fp64_fma_cas.cu",
+  "size": 941,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_ballot_conditional.cu",
+  "size": 1018,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_double_word_cas.cu",
+  "size": 1247,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_simd_mixed_pipeline.cu",
+  "size": 737,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_mxfp8_dot.cu",
+  "size": 999,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_fma_interleave_atomic.cu",
+  "size": 787,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_fp4_hist.cu",
+  "size": 622,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_local_atomic.cu",
+  "size": 2889,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_mixed_f16_bf16.cu",
+  "size": 1102,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_optimal_atomic.cu",
+  "size": 1445,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_tf32_tc_atomic.cu",
+  "size": 902,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_nf4_weighted.cu",
+  "size": 811,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_dp4a_atomic.cu",
+  "size": 574,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/edge_atomics2/probe_edge2_redux_xor_parity.cu",
+  "size": 804,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_election_mask.cu",
+  "size": 2108,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_divergence_cache_wombo.cu",
+  "size": 2621,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_warp_atomic_cache_profile_safe.cu",
+  "size": 3031,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_divergent.cu",
+  "size": 3641,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_constant_memory.cu",
+  "size": 3946,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_membar_sc_vc_debug.cu",
+  "size": 1078,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_4bit_formats.cu",
+  "size": 9875,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_fp32_arith.cu",
+  "size": 3882,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_bignum_bigfloat.cu",
+  "size": 5664,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tensor_uniform_predicate.cu",
+  "size": 2735,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_banked_reload.cu",
+  "size": 4045,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_bf16_pack_relu_inline_ptx.cu",
+  "size": 1016,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_dep_scoreboard.cu",
+  "size": 3194,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_atomic_throughput.cu",
+  "size": 7149,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_stage_fsm_u64.cu",
+  "size": 3944,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_bitwise.cu",
+  "size": 4224,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_redsys_async_profile_safe.cu",
+  "size": 4478,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_convergence_barriers.cu",
+  "size": 4034,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_indirect_call.cu",
+  "size": 688,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_uniform_branch.cu",
+  "size": 494,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_exception_trap.cu",
+  "size": 389,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_switch_large.cu",
+  "size": 1177,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_tail_call.cu",
+  "size": 408,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_goto_asm.cu",
+  "size": 780,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_continue_loop.cu",
+  "size": 422,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/control_flow2/probe_cf_nested_return.cu",
+  "size": 500,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uint4_tensor.cu",
+  "size": 2309,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_ushf_u64_hi_chain11_exact.cu",
+  "size": 1444,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_register_pressure.cu",
+  "size": 6457,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_int64_arithmetic.cu",
+  "size": 2645,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomg64sys_cache_wombo.cu",
+  "size": 2351,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_scope_mix_cache_wombo.cu",
+  "size": 1981,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/deep_edge/probe_unaligned_access.cu",
+  "size": 681,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/deep_edge/probe_warp_vote_extended.cu",
+  "size": 615,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/deep_edge/probe_elect_sync.cu",
+  "size": 504,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/deep_edge/probe_volatile_patterns.cu",
+  "size": 593,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tensor_ldsm.cu",
+  "size": 4478,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_cache_policy.cu",
+  "size": 3581,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_exotic.cu",
+  "size": 1583,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_warp_atomg64sys_ops_profile_depth_safe.cu",
+  "size": 5372,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_float_add.cu",
+  "size": 452,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_fma_accumulate.cu",
+  "size": 543,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_float_cas_max.cu",
+  "size": 931,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int32_add.cu",
+  "size": 417,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int16_cas_emulated.cu",
+  "size": 879,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_fp16_add.cu",
+  "size": 462,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_simd_reduce.cu",
+  "size": 667,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int32_min_max.cu",
+  "size": 503,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_float2_add.cu",
+  "size": 507,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int64_cas.cu",
+  "size": 616,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_ballot_popc.cu",
+  "size": 741,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int64_add.cu",
+  "size": 427,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_redux_vs_atomic.cu",
+  "size": 807,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_bf16_add.cu",
+  "size": 437,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int8_cas_emulated.cu",
+  "size": 839,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int32_cas.cu",
+  "size": 618,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int32_exch.cu",
+  "size": 477,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_uint32_add.cu",
+  "size": 429,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_contention_sweep.cu",
+  "size": 1153,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/shared_atomics/probe_satom_int32_and_or_xor.cu",
+  "size": 552,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tiling_smem_patterns.cu",
+  "size": 4727,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_hmma_toggle_exact.cu",
+  "size": 4763,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_transcendentals.cu",
+  "size": 5163,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomg64sys_ops_profile_depth_safe.cu",
+  "size": 4675,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_u64_carry_chain_exact.cu",
+  "size": 1801,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_divergent_blockred_warp_atomg64sys_ops_store_profile_safe.cu",
+  "size": 6192,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tensor_extended.cu",
+  "size": 5248,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_comparison.cu",
+  "size": 583,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_scan.cu",
+  "size": 342,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_compare.cu",
+  "size": 262,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_convert_chain.cu",
+  "size": 362,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_fxp_mul.cu",
+  "size": 266,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_scatter.cu",
+  "size": 275,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_histogram.cu",
+  "size": 529,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_accumulate.cu",
+  "size": 428,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_reduce.cu",
+  "size": 300,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_short2_vec.cu",
+  "size": 274,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_add_chain.cu",
+  "size": 466,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_stencil.cu",
+  "size": 624,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_radix_digit.cu",
+  "size": 515,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_coarsened.cu",
+  "size": 685,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_sad.cu",
+  "size": 395,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_prefix_sum.cu",
+  "size": 395,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_interleave.cu",
+  "size": 310,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_tc_matmul.cu",
+  "size": 726,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_histogram.cu",
+  "size": 395,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_umul64hi.cu",
+  "size": 309,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_stencil3d.cu",
+  "size": 473,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_minmax_reduce.cu",
+  "size": 432,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_popc64.cu",
+  "size": 308,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_addressing.cu",
+  "size": 331,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_mixed_precision.cu",
+  "size": 644,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_abs_diff.cu",
+  "size": 259,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_mul_chain.cu",
+  "size": 474,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_merge.cu",
+  "size": 510,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_clamp.cu",
+  "size": 261,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_reduce_warp.cu",
+  "size": 414,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_max_pool.cu",
+  "size": 456,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_coarsened.cu",
+  "size": 480,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_pack4.cu",
+  "size": 531,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_imad_chain.cu",
+  "size": 504,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_vectorized.cu",
+  "size": 465,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_atomic_hist.cu",
+  "size": 320,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_quantize.cu",
+  "size": 358,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_stencil.cu",
+  "size": 727,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_bitonic_sort.cu",
+  "size": 583,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_compact.cu",
+  "size": 621,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int16_tile_short4_vec.cu",
+  "size": 292,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_shift.cu",
+  "size": 462,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_dequantize.cu",
+  "size": 261,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int32_tile_scatter_atomic.cu",
+  "size": 304,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_clz64.cu",
+  "size": 368,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_reduce.cu",
+  "size": 432,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_matmul.cu",
+  "size": 409,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int4_tile_pack_unpack.cu",
+  "size": 811,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int64_tile_atomic.cu",
+  "size": 221,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/int_tiling/probe_int8_tile_dp4a_stencil.cu",
+  "size": 805,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_red64sys_cache_wombo.cu",
+  "size": 2776,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_bit_manipulation.cu",
+  "size": 4733,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_warp_atomic_cache_profile_depth_safe.cu",
+  "size": 3673,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_half2_nan_inline_ptx.cu",
+  "size": 968,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_posit_unum.cu",
+  "size": 4786,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tiling_hierarchical.cu",
+  "size": 4697,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_uplop3_truth_table_exact.cu",
+  "size": 2849,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tf32_scalar.cu",
+  "size": 6009,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_mixed_precision.cu",
+  "size": 4961,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_warp_atomg64sys_ops_profile_safe.cu",
+  "size": 4046,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_memory.cu",
+  "size": 4322,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_async_tensor_pipeline.cu",
+  "size": 3308,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_warp_atomg64sys_ops_cache_wombo.cu",
+  "size": 4405,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_tiling_register_blocking.cu",
+  "size": 6273,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_byteview_carrier_exact.cu",
+  "size": 4225,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_cooperative_launch.cu",
+  "size": 4653,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_f2fp_alias_pack.cu",
+  "size": 3640,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_blockred_atomg64sys_ops_cache_wombo.cu",
+  "size": 3567,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_nanosleep_scheduling.cu",
+  "size": 7160,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uint8_uint16_paths.cu",
+  "size": 3025,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_nf4_normalfloat.cu",
+  "size": 4142,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_nonexistent_formats_emulation.cu",
+  "size": 7379,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitmanip_sweep/probe_bfe_bfi_wide.cu",
+  "size": 1482,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitmanip_sweep/probe_bit_deposit_extract.cu",
+  "size": 997,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitmanip_sweep/probe_lop3_all_luts.cu",
+  "size": 2351,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitmanip_sweep/probe_prmt_modes.cu",
+  "size": 1322,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/bitmanip_sweep/probe_shf_all_variants.cu",
+  "size": 1098,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_cutlass_predicate_pipeline.cu",
+  "size": 5709,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_store64sys_cache_wombo.cu",
+  "size": 2219,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/video_codec/probe_nvenc_nvdec_pipeline.cu",
+  "size": 568,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/optical_flow/probe_ofa_pipeline.cu",
+  "size": 600,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_predicate_bank_compiler_spill_exact.cu",
+  "size": 3108,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_bytepack_strict_inline_ptx.cu",
+  "size": 6139,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_u64_strict.cu",
+  "size": 3075,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_warp_sync.cu",
+  "size": 2059,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_gate_async_wombo.cu",
+  "size": 6588,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_i8_all_paths.cu",
+  "size": 590,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_f2f_rounding.cu",
+  "size": 629,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_chain_all_types.cu",
+  "size": 617,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_sat_modes.cu",
+  "size": 733,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_f64_all.cu",
+  "size": 487,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_rounding_modes.cu",
+  "size": 586,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_widening_chain.cu",
+  "size": 539,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/conversion_sweep/probe_conv_f16_bf16_cross.cu",
+  "size": 637,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_uniform_strict_address.cu",
+  "size": 1242,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_atomg64sys_ops_cache_wombo.cu",
+  "size": 2920,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_divergent_blockred_warp_atomg64sys_ops_profile_safe.cu",
+  "size": 5029,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_plop3_source_exact.cu",
+  "size": 6367,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_named.cu",
+  "size": 2837,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_l1_l2_dram_boundary.cu",
+  "size": 4377,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_barrier_coop_groups_sync.cu",
+  "size": 3713,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_blockred_warp_atomg64sys_ops_store_profile_safe.cu",
+  "size": 7785,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_mov_pack_inline_ptx.cu",
+  "size": 3456,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_warpsync_fused_narrow.cu",
+  "size": 6480,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_divergent_blockred_warp_atomg64sys_ops_cache_wombo.cu",
+  "size": 4631,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_combo_uniform_divergent_blockred_warp_atomg64sys_ops_profile_depth_safe.cu",
+  "size": 8728,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/probes/probe_p2r_two_stage_bank_exact.cu",
+  "size": 31559,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_latency_wave5.cu",
+  "size": 12690,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_remaining_latencies.cu",
+  "size": 6231,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_latency_tensor_all.cu",
+  "size": 11226,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_tiling.cu",
+  "size": 3042,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_latency_conversions.cu",
+  "size": 6644,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_fill_all_na.cu",
+  "size": 9782,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_smem_bank_conflicts.cu",
+  "size": 5818,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_latency_expanded.cu",
+  "size": 11389,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_int_bitops.cu",
+  "size": 2859,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_throughput_expanded.cu",
+  "size": 5856,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_occupancy_scaling.cu",
+  "size": 6561,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_latency.cu",
+  "size": 18828,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_cache_topology.cu",
+  "size": 5831,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_throughput.cu",
+  "size": 13432,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/microbench/microbench_latency_corrected.cu",
+  "size": 9182,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/lto/dlto_cross_tu_kernel.cu",
+  "size": 805,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/lto/dlto_stage_helper_mix.cu",
+  "size": 945,
+  "mtime": "2026-03-28 15:08"
+ },
+ {
+  "path": "./src/sass_re/lto/dlto_stage_helper_bits.cu",
+  "size": 665,
+  "mtime": "2026-03-28 15:08"
+ }
+]

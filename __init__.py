@@ -31,3 +31,21 @@ from .tensor_decomposition import svd_compress, joint_rank_bitwidth
 
 # Spectral analysis
 from .spectral import distribution_analysis, spectral_bit_allocation, rotation_quality_score
+
+# CD fidelity metric (phase-geometry preservation)
+from .cd_fidelity import (
+    cd_fidelity_ratio, sliding_cd_fidelity, fidelity_summary,
+    residual_associator_per_token, distortion_decomposition,
+)
+
+# Zero-divisor affinity scoring
+from .zd_bias import sedenion_zd_affinity, batch_zd_affinity, zd_quartile_analysis
+
+# Hierarchical CD tower quantization
+from .hierarchical import (
+    tower_levels, allocate_bits_to_levels,
+    hierarchical_quantize, compare_hierarchical_vs_uniform,
+)
+
+# Sign packing (8x QJL memory reduction)
+from .sign_pack import pack_signs, unpack_signs, packed_inner_product
