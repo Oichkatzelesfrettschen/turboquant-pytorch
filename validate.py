@@ -54,11 +54,24 @@ def build_prompt(tokenizer, target_tokens=2048, needle_pos=0.5):
 def main():
     print("Loading model...", flush=True)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME,
-        quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16, bnb_4bit_quant_type="nf4"),
-        device_map="auto", dtype=torch.float16,
-    )
+    # Try 4-bit loading (BitsAndBytes), fall back to FP16 if unavailable
+    try:
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_NAME,
+            quantization_config=BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=torch.float16,
+                bnb_4bit_quant_type="nf4",
+            ),
+            device_map="auto", dtype=torch.float16,
+        )
+    except Exception as e:
+        print(f"  4-bit loading failed ({e}), using FP16...")
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_NAME,
+            torch_dtype=torch.float16,
+            device_map="auto",
+        )
     model.eval()
     print(f"Loaded. GPU: {torch.cuda.memory_allocated() // 1024 // 1024} MB\n")
 
