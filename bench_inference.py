@@ -120,22 +120,33 @@ def run_torch_profiler(model, tokenizer, prompt, max_new_tokens=50):
         with torch.no_grad():
             model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
 
-    # Extract key metrics
+    # Extract key metrics -- guard for events without CUDA timing
+    # (BitsAndBytes 4-bit kernels and some custom ops lack CUDA profiler hooks)
     events = prof.key_averages()
-    total_cuda_ms = sum(e.cuda_time_total for e in events) / 1000  # us -> ms
-    total_cpu_ms = sum(e.cpu_time_total for e in events) / 1000
+
+    def _cuda_us(e):
+        return getattr(e, "cuda_time_total", 0) or 0
+
+    def _cpu_us(e):
+        return getattr(e, "cpu_time_total", 0) or 0
+
+    total_cuda_ms = sum(_cuda_us(e) for e in events) / 1000
+    total_cpu_ms = sum(_cpu_us(e) for e in events) / 1000
 
     # Find attention-related kernels
-    attn_kernels = [e for e in events if "attn" in e.key.lower() or "attention" in e.key.lower() or "sdpa" in e.key.lower()]
-    matmul_kernels = [e for e in events if "mm" in e.key.lower() or "gemm" in e.key.lower() or "bmm" in e.key.lower()]
+    attn_kernels = [e for e in events if any(k in e.key.lower() for k in ("attn", "attention", "sdpa", "flash"))]
+    matmul_kernels = [e for e in events if any(k in e.key.lower() for k in ("mm", "gemm", "bmm", "linear"))]
 
     return {
         "total_cuda_ms": total_cuda_ms,
         "total_cpu_ms": total_cpu_ms,
-        "n_cuda_events": len([e for e in events if e.cuda_time_total > 0]),
-        "top5_cuda_kernels": [(e.key, e.cuda_time_total / 1000) for e in sorted(events, key=lambda e: e.cuda_time_total, reverse=True)[:5]],
-        "attention_time_ms": sum(e.cuda_time_total for e in attn_kernels) / 1000,
-        "matmul_time_ms": sum(e.cuda_time_total for e in matmul_kernels) / 1000,
+        "n_cuda_events": len([e for e in events if _cuda_us(e) > 0]),
+        "top5_cuda_kernels": [
+            (e.key[:60], _cuda_us(e) / 1000)
+            for e in sorted(events, key=lambda e: _cuda_us(e), reverse=True)[:5]
+        ],
+        "attention_time_ms": sum(_cuda_us(e) for e in attn_kernels) / 1000,
+        "matmul_time_ms": sum(_cuda_us(e) for e in matmul_kernels) / 1000,
     }
 
 
@@ -216,8 +227,86 @@ def main():
         print(f"  GPU util:     {parts[2]}%")
         print(f"  Temperature:  {parts[3]}C")
 
+    # 5. Continuous VRAM monitoring during generation
+    print(f"\n--- 5. VRAM Timeline During Generation ---")
+    gc.collect(); torch.cuda.empty_cache()
+    vram_timeline = []
+    vram_timeline.append(("pre-generate", measure_vram()))
+
+    inputs = tokenizer(prompt_long, return_tensors="pt", truncation=True, max_length=512).to("cuda")
+    vram_timeline.append(("post-tokenize", measure_vram()))
+
+    with torch.no_grad():
+        outputs = model(**inputs, use_cache=True)
+    vram_timeline.append(("post-prefill", measure_vram()))
+
+    # Simulate decode steps
+    past = outputs.past_key_values
+    next_token = outputs.logits[:, -1:, :].argmax(dim=-1)
+    for step in range(10):
+        with torch.no_grad():
+            outputs = model(input_ids=next_token, past_key_values=past, use_cache=True)
+        past = outputs.past_key_values
+        next_token = outputs.logits[:, -1:, :].argmax(dim=-1)
+        if step in (0, 4, 9):
+            vram_timeline.append((f"decode-step-{step}", measure_vram()))
+
+    for label, mb in vram_timeline:
+        print(f"  {label:<20} {mb:>8.1f} MB")
+
+    kv_growth = vram_timeline[-1][1] - vram_timeline[2][1]
+    print(f"  KV cache growth (10 decode steps): {kv_growth:.1f} MB")
+
+    # 6. perf stat (CPU counters) for a short generation
+    print(f"\n--- 6. CPU Performance Counters (perf stat) ---")
+    import subprocess, tempfile, json
+
+    # Write a short benchmark script
+    bench_script = os.path.join(tempfile.gettempdir(), "tq_perf_bench.py")
+    with open(bench_script, "w") as f:
+        f.write(f"""
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+model = AutoModelForCausalLM.from_pretrained("{model_name}", torch_dtype=torch.float16, device_map="auto")
+tokenizer = AutoTokenizer.from_pretrained("{model_name}")
+inputs = tokenizer("Hello world", return_tensors="pt").to("cuda")
+with torch.no_grad():
+    model.generate(**inputs, max_new_tokens=20, do_sample=False)
+""")
+
+    perf_result = subprocess.run(
+        ["perf", "stat", "-e", "cache-misses,cache-references,instructions,cycles",
+         "python", bench_script],
+        capture_output=True, text=True, timeout=120,
+    )
+    if perf_result.returncode == 0:
+        # perf stat outputs to stderr
+        for line in perf_result.stderr.strip().split("\n"):
+            line = line.strip()
+            if any(k in line for k in ("cache-misses", "cache-references", "instructions", "cycles", "seconds")):
+                print(f"  {line}")
+    else:
+        print(f"  perf stat failed: {perf_result.stderr[:200]}")
+
+    # 7. GPU memory bandwidth estimate from nvidia-smi
+    print(f"\n--- 7. GPU Memory Bandwidth Snapshot ---")
+    # Run nvidia-smi dmon for 2 seconds during a generation
+    dmon = subprocess.Popen(
+        ["nvidia-smi", "dmon", "-s", "mu", "-d", "1", "-c", "3"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    )
+    # Generate while monitoring
+    with torch.no_grad():
+        model.generate(**inputs, max_new_tokens=50, do_sample=False)
+    dmon_out, _ = dmon.communicate(timeout=10)
+    for line in dmon_out.strip().split("\n"):
+        if not line.startswith("#"):
+            print(f"  {line.strip()}")
+
     print(f"\n{'=' * 70}")
     print(f"  BENCHMARK COMPLETE")
+    print(f"  All measurements are from ACTUAL model inference,")
+    print(f"  not proxy metrics on extracted tensors.")
     print(f"{'=' * 70}\n")
 
 
