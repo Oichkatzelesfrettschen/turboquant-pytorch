@@ -20,7 +20,6 @@ Ported from open_gororoba/crates/cd_kernel/src/turboquant/sign_pack.rs.
 
 import torch
 from torch import Tensor
-from typing import Tuple
 
 
 def pack_signs(signs: Tensor) -> Tensor:

@@ -24,9 +24,8 @@ Ported from open_gororoba baselines/nsnquant.rs, baselines/kivi.rs, grouping.rs.
 
 import torch
 from torch import Tensor
-from typing import Dict, Optional, Tuple
-from dataclasses import dataclass, field
-import math
+from typing import Dict, Tuple
+from dataclasses import dataclass
 
 
 # ---------------------------------------------------------------------------

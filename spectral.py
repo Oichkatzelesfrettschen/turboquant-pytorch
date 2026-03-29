@@ -13,7 +13,7 @@ Functions:
 """
 
 import math
-from typing import Dict, Optional
+from typing import Dict
 
 import torch
 from torch import Tensor

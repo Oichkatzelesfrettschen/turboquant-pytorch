@@ -647,7 +647,7 @@ def prove_clifford_sandwich_norm():
     # This follows from: ||RvR~||^2 = <RvR~, RvR~> = <v, R~RvR~R> = <v,v> = ||v||^2
     # since R~R = 1 (unit rotor) and the scalar product is invariant.
 
-    # The algebraic proof is: R~R = 1 (given), so ||RvR~||^2 = (RvR~)(RvR~)~ 
+    # The algebraic proof is: R~R = 1 (given), so ||RvR~||^2 = (RvR~)(RvR~)~
     # = (RvR~)(Rv~R~) = R(vR~Rv~)R~ = R(v*v~)R~ = R||v||^2R~ = ||v||^2 * RR~ = ||v||^2
 
     # This is a chain of equalities, each step using associativity of Cl(3,0).

@@ -20,7 +20,6 @@ The K-Means codebook should achieve rate-distortion between E8 lattice
 """
 
 import math
-from typing import Optional, Tuple
 
 import torch
 from torch import Tensor

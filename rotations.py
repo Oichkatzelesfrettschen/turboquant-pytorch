@@ -23,7 +23,6 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 import torch
-import torch.nn as nn
 from torch import Tensor
 
 from .cd_rotation import (

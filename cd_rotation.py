@@ -28,8 +28,6 @@ from .cd_algebra import (
     cd_multiply,
     cd_conjugate,
     cd_inverse,
-    cd_normalize,
-    cd_norm,
     cd_random_unit,
 )
 

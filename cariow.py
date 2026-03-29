@@ -29,14 +29,12 @@ This module provides:
 Ported from open_gororoba/crates/cd_kernel/src/cayley_dickson/cariow_factorization.rs.
 """
 
-import math
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-import torch
 from torch import Tensor
 
-from .cd_algebra import cd_conjugate, cd_multiply, _complex_multiply, _quaternion_multiply
+from .cd_algebra import cd_multiply, _complex_multiply, _quaternion_multiply
 
 
 @dataclass

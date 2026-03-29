@@ -17,7 +17,6 @@ Ported from open_gororoba/crates/cd_kernel/src/turboquant/zd_bias.rs.
 
 import torch
 from torch import Tensor
-from typing import Tuple
 
 from .cd_algebra import cd_multiply, cd_normalize
 

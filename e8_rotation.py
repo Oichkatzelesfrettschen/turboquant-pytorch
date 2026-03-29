@@ -18,7 +18,6 @@ Ported from open_gororoba/crates/cd_kernel/src/turboquant/e8_rotation.rs.
 
 import torch
 from torch import Tensor
-from typing import Optional
 
 from .cd_algebra import cd_multiply, cd_normalize
 from .e8_quantizer import generate_e8_roots

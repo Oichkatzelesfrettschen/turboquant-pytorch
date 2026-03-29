@@ -26,7 +26,6 @@ is unavailable or for non-power-of-2 dimensions.
 """
 
 import math
-from typing import Optional
 
 import torch
 from torch import Tensor

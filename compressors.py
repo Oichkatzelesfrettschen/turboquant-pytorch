@@ -17,10 +17,9 @@ softmax(scores) @ V averages out per-vector errors.
 """
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import math
-from typing import Optional, Union
+from typing import Optional
 
 from .rotations import Rotation, HaarRotation
 from .lattice_vq import VectorQuantizer, ScalarLloydMaxQuantizer
@@ -103,7 +102,7 @@ class TurboQuantCompressorV2:
         # We call nsn_preprocess which handles this correctly.
         nsn_state = None
         if use_nsn:
-            from .nsn_preprocess import nsn_preprocess, NSNState
+            from .nsn_preprocess import nsn_preprocess
             flat_norm, nsn_state = nsn_preprocess(flat_norm, already_normalized=True)
 
         # Rotate

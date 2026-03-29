@@ -13,8 +13,7 @@ We solve the Lloyd-Max conditions (continuous 1-D k-means) to find optimal centr
 import torch
 import math
 import threading
-from functools import lru_cache
-from scipy import integrate, special
+from scipy import integrate
 
 # Thread-safe cache for solved codebooks. Concurrent DataLoader workers
 # may construct LloydMaxCodebook instances simultaneously.

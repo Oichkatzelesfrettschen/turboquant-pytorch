@@ -16,7 +16,6 @@ Optimization patterns:
     - POPC for bit-packed sign inner products (7-8 cyc on Ada)
 """
 
-import math
 import os
 
 import torch

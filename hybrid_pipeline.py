@@ -45,9 +45,9 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from torch import Tensor
 
-from .nsn_preprocess import nsn_preprocess, nsn_restore, NSNState
+from .nsn_preprocess import nsn_preprocess, nsn_restore
 from .rotations import Rotation, HaarRotation, WHTRotation, CDRotation
-from .cd_algebra import cd_multiply, cd_normalize, cd_inverse, cd_random_unit
+from .cd_algebra import cd_multiply, cd_inverse, cd_random_unit
 from .lloyd_max import LloydMaxCodebook
 from .sign_pack import pack_signs, unpack_signs
 from .cd_fidelity import fidelity_summary

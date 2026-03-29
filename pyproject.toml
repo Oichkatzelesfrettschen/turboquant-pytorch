@@ -56,8 +56,38 @@ python_files = ["test_*.py"]
 python_functions = ["test_*"]
 python_classes = ["Test*"]
 addopts = "-v --tb=short --import-mode=importlib"
+markers = [
+    "slow: Z3 SMT proofs (deselect with -m 'not slow')",
+]
 filterwarnings = [
     "default",
     "ignore::FutureWarning",
     "ignore::DeprecationWarning:bitsandbytes",
 ]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = [
+    "E501",   # line too long -- research code has long equations/comments
+    "E402",   # import not at top -- needed for importlib bootstrap in bench/test files
+    "E741",   # ambiguous variable name -- math code uses standard notation (l, O, I)
+    "F841",   # unused variable -- some assigned for debugging/readability
+    "F541",   # f-string without placeholders -- used as descriptive labels
+    "E702",   # multiple statements on one line -- used for gc.collect(); torch.cuda.empty_cache()
+    "E701",   # multiple statements on one line (colon)
+    "E731",   # lambda assignment
+]
+
+[tool.ruff.lint.per-file-ignores]
+"bench_*.py" = ["F401", "E402"]
+"test_*.py" = ["F401"]
+"profile_*.py" = ["F401", "E402"]
+"compare_*.py" = ["F401", "E402"]
+"validate.py" = ["F401", "E402"]
+"formal_verify.py" = ["F401", "E402", "F541"]
+"conftest.py" = ["F401"]
+"__init__.py" = ["F401"]  # re-exports are the purpose of __init__.py

@@ -259,7 +259,9 @@ def main():
 
     # 6. perf stat (CPU counters) for a short generation
     print(f"\n--- 6. CPU Performance Counters (perf stat) ---")
-    import subprocess, tempfile, json
+    import subprocess
+    import tempfile
+    import json
 
     # Write a short benchmark script
     bench_script = os.path.join(tempfile.gettempdir(), "tq_perf_bench.py")
