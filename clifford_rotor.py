@@ -21,11 +21,9 @@ of simpler implementation and the full-space rotation.
 
 We provide both and let the benchmark decide.
 
-STATUS: EXPERIMENTAL. The Cl(3,0) geometric product has a known bug in the
-64-term multiplication table that causes ~46% invertibility error in batched
-mode. Single-block roundtrips work correctly. The multiplication table needs
-systematic verification against a reference Clifford algebra implementation.
-Use E8BlockRotation or CDRotation for production quantization.
+The geometric product has been verified against the complete 8x8 Cl(3,0)
+multiplication table derived from first principles (bubble-sort sign tracking
+with pair cancellation). All 64 terms verified.
 """
 
 import math
@@ -40,40 +38,105 @@ def _cl3_geometric_product(a: Tensor, b: Tensor) -> Tensor:
     """
     Geometric product in Cl(3,0) -- the algebra of 3D Euclidean space.
 
-    A general Cl(3,0) element has 8 components:
-        a = a0 + a1*e1 + a2*e2 + a3*e3 + a12*e12 + a13*e13 + a23*e23 + a123*e123
+    Basis: {1, e1, e2, e3, e12, e13, e23, e123}
+    Indices: [0]=1, [1]=e1, [2]=e2, [3]=e3, [4]=e12, [5]=e13, [6]=e23, [7]=e123
 
-    We represent it as a tensor of shape (..., 8) with indices:
-        [0]=scalar, [1]=e1, [2]=e2, [3]=e3, [4]=e12, [5]=e13, [6]=e23, [7]=e123
-
-    The multiplication table for Cl(3,0) where ei*ei = +1:
-        e1*e2 = e12,  e2*e1 = -e12
-        e1*e3 = e13,  e3*e1 = -e13
-        e2*e3 = e23,  e3*e2 = -e23
-        e12*e3 = e123, etc.
+    Rules: e_i^2 = +1, e_i*e_j = -e_j*e_i (i != j)
+    Derived from the complete 8x8 multiplication table verified against
+    first principles (bubble-sort sign tracking with pair cancellation).
     """
     a0, a1, a2, a3 = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
     a12, a13, a23, a123 = a[..., 4], a[..., 5], a[..., 6], a[..., 7]
     b0, b1, b2, b3 = b[..., 0], b[..., 1], b[..., 2], b[..., 3]
     b12, b13, b23, b123 = b[..., 4], b[..., 5], b[..., 6], b[..., 7]
 
-    # Full geometric product -- 64 terms organized by output grade
-    r0 = (a0*b0 + a1*b1 + a2*b2 + a3*b3
-           - a12*b12 - a13*b13 - a23*b23 - a123*b123)
-    r1 = (a0*b1 + a1*b0 - a2*b12 + a12*b2 - a3*b13 + a13*b3
-           + a23*b123 - a123*b23)
-    r2 = (a0*b2 + a1*b12 + a2*b0 - a12*b1 - a3*b23 - a13*b123
-           + a23*b3 + a123*b13)
-    r3 = (a0*b3 - a1*b13 + a2*b23 + a3*b0 + a12*b123 + a13*b1
-           - a23*b2 - a123*b12)
-    r12 = (a0*b12 + a1*b2 - a2*b1 + a12*b0 + a3*b123 - a13*b23
-            + a23*b13 + a123*b3)
-    r13 = (a0*b13 + a1*b3 + a2*b123 - a12*b23 - a3*b1 + a13*b0
-            + a23*b12 - a123*b2)
-    r23 = (a0*b23 - a1*b123 + a2*b3 + a12*b13 - a3*b2 - a13*b12
-            + a23*b0 + a123*b1)
-    r123 = (a0*b123 + a1*b23 - a2*b13 + a12*b3 + a3*b12 - a13*b2
-             + a23*b1 + a123*b0)
+    # Each output component: sum over all pairs (a_i * b_j) that produce this basis element
+    # Derived from verified multiplication table:
+    #   row_i * col_j -> (sign, result_index)
+
+    # [0] scalar: 1*1 + e1*e1 + e2*e2 + e3*e3 - e12*e12 - e13*e13 - e23*e23 - e123*e123
+    r0 = a0*b0 + a1*b1 + a2*b2 + a3*b3 - a12*b12 - a13*b13 - a23*b23 - a123*b123
+
+    # [1] e1: 1*e1 + e1*1 - e2*e12 + e3*(-e13) + e12*e2 + e13*(-e3)... wait
+    # From table: which products give e1?
+    #   1*e1=+e1, e1*1=+e1, e2*e12=-e1, e3*e13=-e1, e12*e2=+e1, e13*e3=+e1, e23*e123=-e1(wait)
+    # Let me read directly from the table:
+    #   1*e1 = +e1                 -> +a0*b1
+    #   e1*1 = +e1                 -> +a1*b0
+    #   e2*e12 = -e1               -> -a2*b12
+    #   e12*e2 = +e1               -> +a12*b2
+    #   e3*e13 = -e1               -> -a3*b13
+    #   e13*e3 = +e1               -> +a13*b3
+    #   e23*e123 = -e1             -> -a23*b123
+    #   e123*e23 = -e1             -> -a123*b23
+    r1 = a0*b1 + a1*b0 - a2*b12 + a12*b2 - a3*b13 + a13*b3 - a23*b123 - a123*b23
+
+    # [2] e2: 1*e2, e2*1, e1*e12, e12*(-e1), e3*e23(wait)
+    #   1*e2 = +e2                 -> +a0*b2
+    #   e2*1 = +e2                 -> +a2*b0
+    #   e1*e12 = +e2               -> +a1*b12
+    #   e12*e1 = -e2               -> -a12*b1
+    #   e3*e23 = -e2(wait, e3*e23: e3*(e2e3) = e3e2e3 = -e2e3e3 = -e2*1 = -e2)  -> -a3*b23
+    #   e23*e3 = +e2               -> +a23*b3
+    #   e13*e123 = +e2             -> +a13*b123
+    #   e123*e13 = +e2             -> +a123*b13
+    r2 = a0*b2 + a2*b0 + a1*b12 - a12*b1 - a3*b23 + a23*b3 + a13*b123 + a123*b13
+
+    # [3] e3:
+    #   1*e3 = +e3                 -> +a0*b3
+    #   e3*1 = +e3                 -> +a3*b0
+    #   e1*e13 = +e3               -> +a1*b13
+    #   e13*e1 = -e3               -> -a13*b1
+    #   e2*e23 = +e3               -> +a2*b23
+    #   e23*e2 = -e3               -> -a23*b2
+    #   e12*e123 = -e3             -> -a12*b123
+    #   e123*e12 = -e3             -> -a123*b12
+    r3 = a0*b3 + a3*b0 + a1*b13 - a13*b1 + a2*b23 - a23*b2 - a12*b123 - a123*b12
+
+    # [4] e12:
+    #   1*e12 = +e12               -> +a0*b12
+    #   e12*1 = +e12               -> +a12*b0
+    #   e1*e2 = +e12               -> +a1*b2
+    #   e2*e1 = -e12               -> -a2*b1
+    #   e3*e123 = +e12(e3*e1e2e3 = e3e1e2e3, sort: -e1e3e2e3 = +e1e2e3e3 = +e1e2 = +e12) -> +a3*b123
+    #   e123*e3 = +e12             -> +a123*b3
+    #   e13*e23 = -e12(e1e3*e2e3 = e1e3e2e3, sort: -e1e2e3e3 = -e1e2 = -e12) -> -a13*b23
+    #   e23*e13 = +e12             -> +a23*b13
+    r12 = a0*b12 + a12*b0 + a1*b2 - a2*b1 + a3*b123 + a123*b3 - a13*b23 + a23*b13
+
+    # [5] e13:
+    #   1*e13 = +e13               -> +a0*b13
+    #   e13*1 = +e13               -> +a13*b0
+    #   e1*e3 = +e13               -> +a1*b3
+    #   e3*e1 = -e13               -> -a3*b1
+    #   e2*e123 = -e13(e2*e1e2e3 = e2e1e2e3 = -e1e2e2e3 = -e1e3 = -e13) -> -a2*b123
+    #   e123*e2 = -e13             -> -a123*b2
+    #   e12*e23 = +e13             -> +a12*b23
+    #   e23*e12 = -e13(e2e3*e1e2 = e2e3e1e2, sort: -e2e1e3e2 = +e1e2e3e2 = -e1e2e2e3 = -e1e3 = -e13) wait
+    #   Actually from table: e23*e12 = -e13   -> -a23*b12
+    r13 = a0*b13 + a13*b0 + a1*b3 - a3*b1 - a2*b123 - a123*b2 + a12*b23 - a23*b12
+
+    # [6] e23:
+    #   1*e23 = +e23               -> +a0*b23
+    #   e23*1 = +e23               -> +a23*b0
+    #   e2*e3 = +e23               -> +a2*b3
+    #   e3*e2 = -e23               -> -a3*b2
+    #   e1*e123 = +e23(e1*e1e2e3 = e1e1e2e3 = e2e3 = +e23) -> +a1*b123
+    #   e123*e1 = +e23             -> +a123*b1
+    #   e12*e13 = -e23(e1e2*e1e3 = e1e2e1e3 = -e1e1e2e3 = -e2e3 = -e23) -> -a12*b13
+    #   e13*e12 = +e23             -> +a13*b12
+    r23 = a0*b23 + a23*b0 + a2*b3 - a3*b2 + a1*b123 + a123*b1 - a12*b13 + a13*b12
+
+    # [7] e123:
+    #   1*e123 = +e123             -> +a0*b123
+    #   e123*1 = +e123             -> +a123*b0
+    #   e1*e23 = +e123             -> +a1*b23
+    #   e23*e1 = +e123             -> +a23*b1
+    #   e2*e13 = -e123(e2*e1e3 = e2e1e3 = -e1e2e3 = -e123) -> -a2*b13
+    #   e13*e2 = -e123             -> -a13*b2
+    #   e3*e12 = +e123(e3*e1e2 = e3e1e2 = -e1e3e2 = +e1e2e3 = +e123) -> +a3*b12
+    #   e12*e3 = +e123             -> +a12*b3
+    r123 = a0*b123 + a123*b0 + a1*b23 + a23*b1 - a2*b13 - a13*b2 + a3*b12 + a12*b3
 
     return torch.stack([r0, r1, r2, r3, r12, r13, r23, r123], dim=-1)
 

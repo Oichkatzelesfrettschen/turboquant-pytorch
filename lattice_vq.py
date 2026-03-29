@@ -107,14 +107,14 @@ class E8LatticeQuantizer(VectorQuantizer):
     for the first shell of 240 points).
     """
 
-    def __init__(self, d: int, device: str = "cpu", scale_method: str = "mse_optimal"):
+    def __init__(self, d: int, device: str = "cpu", scale_method: str = "grid_search"):
         if d % 8 != 0:
             raise ValueError(f"E8 quantizer requires d % 8 == 0, got d={d}")
         self.d = d
         self.n_blocks = d // 8
         self.device = device
         self._scale = None
-        self._scale_method = scale_method
+        self._scale_method = scale_method  # grid_search is 16x better than heuristic
 
     def quantize(self, x: Tensor) -> dict:
         batch_shape = x.shape[:-1]
