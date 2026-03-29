@@ -1,0 +1,37 @@
+=== ITERATION 3: Tighten, strengthen hardware angle, cut jargon ===
+
+Title: Distribution-Aware KV Cache Compression: NSN Pre-processing,
+Structured Rotation, and Bit-Packed Residual Correction
+
+Key-value (KV) cache memory is the primary bottleneck for long-context
+LLM inference. We show that the dominant quality loss in KV cache
+quantization stems from the mismatch between real KV cache distributions
+(severe per-channel outliers) and the Gaussian assumption of optimal
+scalar codebooks -- not from the rotation or codebook design.
+
+We introduce a three-stage pipeline: (1) Normalize-Shift-Normalize
+(NSN) pre-processing transforms KV distributions to KL divergence 0.02
+from the codebook design distribution; (2) materialized Walsh-Hadamard
+rotation via cuBLAS achieves dense-rotation throughput (561M vectors/s
+with TF32) at 64x fewer parameters; (3) bit-packed QJL sign storage
+reduces residual correction memory 8x.
+
+On Qwen2.5-3B and Mistral-7B, NSN contributes +136 basis points cosine
+similarity and +25 percentage points top-1 attention match -- the
+dominant effect. The full pipeline achieves 0.9985 attention cosine
+(vs 0.9849 vanilla TurboQuant) with 69% memory reduction.
+
+We analyze the rotation design space through Cayley-Dickson algebra,
+proving isometric guarantees for structured block rotations and
+identifying shared butterfly structure between Walsh-Hadamard rotation
+and algebraic multiplication (Cariow factorization), suggesting fused
+hardware implementations exploiting this duality.
+
+CRITIQUE 3:
+- Cleaner: removed "unified algebraic framework" handwaving
+- Concrete number: 561M vectors/s with TF32 (MICRO cares about this)
+- Hardware angle: "fused hardware implementations" at the end
+- BUT: 199 words and the last paragraph is still theoretical --
+  MICRO wants measured hardware implications, not "suggests"
+- The title is now accurate but boring
+- "dominant effect" is repeated implicitly

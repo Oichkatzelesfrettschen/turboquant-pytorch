@@ -1,0 +1,41 @@
+=== ITERATION 5 (FINAL): Maximum impact, every word earns its place ===
+
+Title: NSN-TurboQuant: Distribution-Aware KV Cache Compression
+with 7.5x Bandwidth Reduction
+
+LLM key-value (KV) cache memory grows linearly with context length
+and dominates long-context inference cost. We show that the primary
+quality bottleneck in KV cache quantization is distribution mismatch:
+real caches exhibit per-channel outliers with 423x variance ratio,
+while optimal scalar codebooks assume Gaussian inputs.
+
+We extend TurboQuant (ICLR 2026) with three techniques:
+(1) Normalize-Shift-Normalize (NSN) pre-processing reduces
+variance ratio to 1.01x, enabling Lloyd-Max codebooks to operate
+at their design optimum (+136 basis points attention cosine
+similarity, +25 percentage points top-1 match);
+(2) materialized Walsh-Hadamard rotation via cuBLAS GEMM achieves
+561M vectors/second with TF32 at 64x fewer parameters than dense
+Haar rotation; (3) bit-packed QJL signs reduce residual correction
+storage 8x, yielding 7.5x memory bandwidth reduction per attention
+score computation.
+
+Ablation on Qwen2.5-3B and Mistral-7B confirms NSN as the dominant
+contributor -- rotation choice adds less than 1bp. The full pipeline
+achieves 0.9985 attention cosine (vs 0.9849 vanilla) with 69%
+total KV memory reduction. We ground the rotation design space in
+Cayley-Dickson algebra with 30 algebraic properties formally
+verified via SMT solver.
+
+[197 words]
+
+FINAL ASSESSMENT:
++ Leads with the hardware-relevant number (7.5x bandwidth)
++ The "surprising finding" (rotation <1bp) is honest and compelling
++ 423x -> 1.01x variance ratio tells the whole story in two numbers
++ 561M/s throughput is concrete and measurable
++ Z3 verification mentioned but not oversold
++ Every sentence carries information; no filler
+- Could mention specific architectures (Ampere/Ada TF32) for MICRO
+- "Cayley-Dickson algebra" in the abstract may confuse arch reviewers
+  but it IS the novel theoretical contribution

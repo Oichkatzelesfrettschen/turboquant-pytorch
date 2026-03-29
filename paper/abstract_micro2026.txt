@@ -1,31 +1,27 @@
-Title: Structured Rotations and Lattice Quantization for KV Cache
-Compression via Cayley-Dickson Algebra
+Title: NSN-TurboQuant: Distribution-Aware KV Cache Compression
+with 7.5x Bandwidth Reduction
 
-Abstract (250 words max for MICRO):
+Abstract:
 
-Key-value (KV) cache memory dominates long-context LLM inference cost.
-TurboQuant (ICLR 2026) addresses this via random orthogonal rotation,
-per-coordinate Lloyd-Max quantization, and 1-bit QJL residual correction.
-We identify three limitations: O(d^2) Haar rotation cost, scalar
-quantization ignoring vector structure, and no pre-processing for the
-hostile channel-outlier distribution of real KV caches.
+LLM key-value (KV) cache memory grows linearly with context length
+and dominates long-context inference cost. We show that the primary
+quality bottleneck in KV cache quantization is distribution mismatch:
+real caches exhibit per-channel outliers with 423x variance ratio,
+while optimal scalar codebooks assume Gaussian inputs.
 
-We introduce a pipeline combining (1) Normalize-Shift-Normalize (NSN)
-pre-processing that transforms channel-outlier distributions into
-near-N(0,1/d), enabling optimal Lloyd-Max codebook utilization;
-(2) Walsh-Hadamard rotation materialized as a dense matrix for cuBLAS
-GEMM at full GPU throughput with O(d) parameter storage; and (3)
-bit-packed QJL sign storage for 69% memory reduction. We ground these
-techniques in a unified algebraic framework connecting Cayley-Dickson
-algebras, Clifford algebras, E8 lattice quantization, and the
-Barnes-Wall lattice hierarchy.
+We extend TurboQuant (ICLR 2026) with three techniques:
+(1) Normalize-Shift-Normalize (NSN) pre-processing reduces variance
+ratio to 1.01x, enabling Lloyd-Max codebooks to operate at their
+design optimum (+136 basis points attention cosine similarity, +25
+percentage points top-1 match); (2) materialized Walsh-Hadamard
+rotation via cuBLAS GEMM achieves 561M vectors/second with TF32 at
+64x fewer parameters than dense Haar rotation; (3) bit-packed QJL
+signs reduce residual correction storage 8x, yielding 7.5x memory
+bandwidth reduction per attention score computation.
 
-Ablation on Qwen2.5-3B and Mistral-7B KV caches shows NSN is the
-dominant contributor (+136 basis points cosine similarity, +25
-percentage points top-1 attention match), while structured rotation
-provides formal isometry guarantees and storage efficiency. Our
-full-stack pipeline achieves 0.9985 attention cosine similarity (vs
-0.9849 vanilla) with 69% memory reduction. We formally verify 30 of
-36 algebraic properties via Z3 SMT solver and identify the
-Cariow-Hadamard duality between structured rotation and algebraic
-multiplication, opening paths to fused hardware implementations.
+Ablation on Qwen2.5-3B and Mistral-7B confirms NSN as the dominant
+contributor -- rotation choice adds less than 1bp. The full pipeline
+achieves 0.9985 attention cosine (vs 0.9849 vanilla) with 69% total
+KV memory reduction. We ground the rotation design space in
+Cayley-Dickson algebra with 30 algebraic properties formally verified
+via SMT solver.

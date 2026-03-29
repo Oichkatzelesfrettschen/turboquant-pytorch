@@ -1,0 +1,161 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{turboquant2026}
+\citation{conwaysloane}
+\@writefile{toc}{\contentsline {section}{Abstract}{1}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{1}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Contributions.}{1}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{1}{section.2}\protected@file@percent }
+\newlabel{sec:background}{{2}{1}{Background}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}TurboQuant Two-Stage Pipeline}{1}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Stage 1 (MSE).}{1}{section*.6}\protected@file@percent }
+\newlabel{eq:mse-stage}{{1}{1}{Stage 1 (MSE)}{equation.1}{}}
+\citation{cariow2012}
+\citation{nsnquant2025}
+\@writefile{toc}{\contentsline {paragraph}{Stage 2 (QJL).}{2}{section*.7}\protected@file@percent }
+\newlabel{eq:qjl-signs}{{2}{2}{Stage 2 (QJL)}{equation.2}{}}
+\newlabel{eq:qjl-estimator}{{3}{2}{Stage 2 (QJL)}{equation.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Cayley-Dickson Construction}{2}{subsection.2.2}\protected@file@percent }
+\newlabel{eq:cd-doubling}{{4}{2}{Cayley-Dickson Construction}{equation.4}{}}
+\newlabel{thm:hurwitz}{{1}{2}{Hurwitz, 1898}{theorem.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Lloyd-Max Optimality}{2}{subsection.2.3}\protected@file@percent }
+\newlabel{eq:lloyd-conditions}{{5}{2}{Lloyd-Max Optimality}{equation.5}{}}
+\newlabel{eq:lloyd-distortion}{{6}{2}{Lloyd-Max Optimality}{equation.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Why NSN improves Lloyd-Max.}{2}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}QJL Unbiasedness}{2}{subsection.2.4}\protected@file@percent }
+\newlabel{eq:sign-projection}{{7}{2}{QJL Unbiasedness}{equation.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Rotation methods for quantization. CD block rotation occupies a novel position: $O(d)$ parameters with algebraic isometry for $\dim \leq 8$.}}{2}{table.caption.9}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:rotations}{{1}{2}{Rotation methods for quantization. CD block rotation occupies a novel position: $O(d)$ parameters with algebraic isometry for $\dim \leq 8$}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Rotation-Based Quantization Landscape}{2}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}CD-Structured Rotations}{2}{section.3}\protected@file@percent }
+\newlabel{sec:cd-rotation}{{3}{2}{CD-Structured Rotations}{section.3}{}}
+\newlabel{def:cd-block}{{2}{2}{CD block rotation}{theorem.2}{}}
+\newlabel{eq:cd-rotation}{{8}{2}{CD block rotation}{equation.8}{}}
+\newlabel{prop:isometry}{{3}{2}{Isometric rotation}{theorem.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Octonion Multiplication Complexity}{2}{subsection.3.1}\protected@file@percent }
+\newlabel{eq:cariow}{{9}{2}{Octonion Multiplication Complexity}{equation.9}{}}
+\newlabel{rem:duality}{{5}{2}{Cariow-Hadamard duality}{theorem.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Full Pipeline}{2}{section.4}\protected@file@percent }
+\newlabel{sec:pipeline}{{4}{2}{Full Pipeline}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}NSN Pre-processing}{2}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Ablation on Qwen2.5-3B (36 layers, 2 KV heads, $d=128$, 3-bit). Each row adds one technique to the previous row. NSN dominates.}}{3}{table.caption.10}\protected@file@percent }
+\newlabel{tab:ablation}{{2}{3}{Ablation on Qwen2.5-3B (36 layers, 2 KV heads, $d=128$, 3-bit). Each row adds one technique to the previous row. NSN dominates}{table.caption.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces GPU rotation throughput (RTX 4070 Ti, Ada SM\nonbreakingspace 8.9, $d=128$). TF32 auto-enabled on Ampere+ provides $3\times $ speedup.}}{3}{table.caption.12}\protected@file@percent }
+\newlabel{tab:throughput}{{3}{3}{GPU rotation throughput (RTX 4070 Ti, Ada SM~8.9, $d=128$). TF32 auto-enabled on Ampere+ provides $3\times $ speedup}{table.caption.12}{}}
+\@writefile{toc}{\contentsline {paragraph}{Why NSN dominates.}{3}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Materialized WHT via cuBLAS}{3}{subsection.4.2}\protected@file@percent }
+\newlabel{eq:wht}{{10}{3}{Materialized WHT via cuBLAS}{equation.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Sign Packing}{3}{subsection.4.3}\protected@file@percent }
+\newlabel{eq:sign-ip}{{11}{3}{Sign Packing}{equation.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Full Algorithm}{3}{subsection.4.4}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Extended TurboQuant Pipeline}}{3}{algorithm.1}\protected@file@percent }
+\newlabel{alg:pipeline}{{1}{3}{Extended TurboQuant Pipeline}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Unified Algebraic Framework}{3}{section.5}\protected@file@percent }
+\newlabel{sec:algebra}{{5}{3}{Unified Algebraic Framework}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}The CD-BW-Quantizer Chain}{3}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}CD Fidelity Metric}{3}{subsection.5.2}\protected@file@percent }
+\newlabel{eq:fidelity}{{12}{3}{CD Fidelity Metric}{equation.12}{}}
+\@writefile{toc}{\contentsline {paragraph}{Distortion decomposition.}{3}{section*.13}\protected@file@percent }
+\citation{z3}
+\citation{steinmarder}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Z3-verified properties (55 individual statements). ``All $x$'' means proven for \emph  {all} values in the domain, not just tested samples. Total verification time: ${<}2$\,seconds.}}{4}{table.caption.14}\protected@file@percent }
+\newlabel{tab:z3}{{4}{4}{Z3-verified properties (55 individual statements). ``All $x$'' means proven for \emph {all} values in the domain, not just tested samples. Total verification time: ${<}2$\,seconds}{table.caption.14}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Exceptional Algebra Connections}{4}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Formal Verification}{4}{section.6}\protected@file@percent }
+\newlabel{sec:verification}{{6}{4}{Formal Verification}{section.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces SASS instruction latencies on RTX 4070 Ti (Ada SM\nonbreakingspace 8.9). Kernel design maximizes FFMA and avoids SFU (MUFU) instructions.}}{4}{table.caption.15}\protected@file@percent }
+\newlabel{tab:sass}{{5}{4}{SASS instruction latencies on RTX 4070 Ti (Ada SM~8.9). Kernel design maximizes FFMA and avoids SFU (MUFU) instructions}{table.caption.15}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Architectural Implications}{4}{section.7}\protected@file@percent }
+\newlabel{sec:hardware}{{7}{4}{Architectural Implications}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Cariow-Hadamard Duality}{4}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}GPU Architecture Dispatch}{4}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}SASS-Informed Kernel Design}{4}{subsection.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Design principles.}{4}{section*.16}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Attention fidelity on real models ($d=128$, 3-bit). ``Ours'' = NSN + WHT + Lloyd-Max + packed QJL.}}{5}{table.caption.17}\protected@file@percent }
+\newlabel{tab:models}{{6}{5}{Attention fidelity on real models ($d=128$, 3-bit). ``Ours'' = NSN + WHT + Lloyd-Max + packed QJL}{table.caption.17}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Qwen2.5-3B attention fidelity across bit-widths. Higher bits improve all metrics. NSN benefit is consistent.}}{5}{table.caption.18}\protected@file@percent }
+\newlabel{tab:perbits}{{7}{5}{Qwen2.5-3B attention fidelity across bit-widths. Higher bits improve all metrics. NSN benefit is consistent}{table.caption.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4}Memory Bandwidth Analysis}{5}{subsection.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8}Experiments}{5}{section.8}\protected@file@percent }
+\newlabel{sec:experiments}{{8}{5}{Experiments}{section.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.1}Experimental Setup}{5}{subsection.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2}Multi-Model Results}{5}{subsection.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3}Per-Bit-Width Analysis}{5}{subsection.8.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces All rotations with NSN pre-processing (synthetic, $d=128$, $n=500$, 3-bit). WHT is best; CD block hurts post-NSN.}}{5}{table.caption.19}\protected@file@percent }
+\newlabel{tab:rotations-nsn}{{8}{5}{All rotations with NSN pre-processing (synthetic, $d=128$, $n=500$, 3-bit). WHT is best; CD block hurts post-NSN}{table.caption.19}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Memory breakdown for Qwen2.5-3B KV cache at 3-bit ($d=128$, $S=2048$, 36 layers, 2 heads). Total original: 289\,MB in FP16.}}{5}{table.caption.21}\protected@file@percent }
+\newlabel{tab:memory}{{9}{5}{Memory breakdown for Qwen2.5-3B KV cache at 3-bit ($d=128$, $S=2048$, 36 layers, 2 heads). Total original: 289\,MB in FP16}{table.caption.21}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4}Rotation Comparison With NSN}{5}{subsection.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Why CD block rotation hurts post-NSN.}{5}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5}Memory Breakdown}{5}{subsection.8.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.6}RCA: Why Rotation Choice Matters Less Than Expected}{5}{subsection.8.6}\protected@file@percent }
+\citation{quip2023}
+\citation{quipsharp2024}
+\citation{quarot2024}
+\citation{spinquant2024}
+\citation{butterflyquant2025}
+\citation{kivi2024}
+\citation{nsnquant2025}
+\citation{turboquant2026}
+\citation{parcollet2019}
+\citation{zhu2019}
+\citation{zhang2021}
+\citation{cariow2012}
+\citation{turboquant2026,kivi2024}
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Per-stage latency breakdown (RTX 4070 Ti, $d=128$, $n=2000$, 3-bit). NSN is nearly free (2\% overhead). Rotation dominates.}}{6}{table.caption.22}\protected@file@percent }
+\newlabel{tab:profile}{{10}{6}{Per-stage latency breakdown (RTX 4070 Ti, $d=128$, $n=2000$, 3-bit). NSN is nearly free (2\% overhead). Rotation dominates}{table.caption.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.7}RCA: Post-VQ Scaling Hurts}{6}{subsection.8.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.8}Pipeline Profiling}{6}{subsection.8.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.9}CPU Optimization}{6}{subsection.8.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9}Related Work}{6}{section.9}\protected@file@percent }
+\newlabel{sec:related}{{9}{6}{Related Work}{section.9}{}}
+\@writefile{toc}{\contentsline {paragraph}{Rotation-based quantization.}{6}{section*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{KV cache quantization.}{6}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Hypercomplex networks.}{6}{section*.25}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}Discussion}{6}{section.10}\protected@file@percent }
+\newlabel{sec:discussion}{{10}{6}{Discussion}{section.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}Cariow Factorization: Worked Example at $\dim =8$}{6}{subsection.10.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Stage 1: Hadamard decomposition.}{6}{section*.26}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Stage 2: Recurse on $4 \times 4$ blocks.}{6}{section*.27}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Stage 3: $2 \times 2$ Toeplitz trick.}{6}{section*.28}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Total.}{6}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}NSN Distribution Transformation}{6}{subsection.10.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.3}Limitations and Future Work}{6}{subsection.10.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{True perplexity.}{6}{section*.30}\protected@file@percent }
+\citation{cariow2012}
+\bibstyle{ACM-Reference-Format}
+\bibcite{turboquant2026}{{1}{}{{}}{{}}}
+\bibcite{quip2023}{{2}{}{{}}{{}}}
+\bibcite{quipsharp2024}{{3}{}{{}}{{}}}
+\bibcite{quarot2024}{{4}{}{{}}{{}}}
+\bibcite{spinquant2024}{{5}{}{{}}{{}}}
+\bibcite{butterflyquant2025}{{6}{}{{}}{{}}}
+\bibcite{kivi2024}{{7}{}{{}}{{}}}
+\bibcite{nsnquant2025}{{8}{}{{}}{{}}}
+\bibcite{parcollet2019}{{9}{}{{}}{{}}}
+\bibcite{zhu2019}{{10}{}{{}}{{}}}
+\bibcite{zhang2021}{{11}{}{{}}{{}}}
+\bibcite{cariow2012}{{12}{}{{}}{{}}}
+\bibcite{conwaysloane}{{13}{}{{}}{{}}}
+\bibcite{z3}{{14}{}{{}}{{}}}
+\bibcite{steinmarder}{{15}{}{{}}{{}}}
+\newlabel{tocindent-1}{0pt}
+\newlabel{tocindent0}{0pt}
+\newlabel{tocindent1}{8.37pt}
+\newlabel{tocindent2}{14.53499pt}
+\newlabel{tocindent3}{0pt}
+\newlabel{tocindent4}{0pt}
+\newlabel{tocindent5}{0pt}
+\providecommand\NAT@force@numbers{}\NAT@force@numbers
+\@writefile{toc}{\contentsline {paragraph}{Cariow implementation.}{7}{section*.31}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Scale beyond $d=128$.}{7}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Fused hardware.}{7}{section*.33}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {11}Conclusion}{7}{section.11}\protected@file@percent }
+\newlabel{sec:conclusion}{{11}{7}{Conclusion}{section.11}{}}
+\@writefile{toc}{\contentsline {section}{References}{7}{section*.35}\protected@file@percent }
+\newlabel{TotPages}{{7}{7}{}{page.7}{}}
+\gdef \@abspage@last{7}
