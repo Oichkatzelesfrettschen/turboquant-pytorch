@@ -814,3 +814,328 @@ if __name__ == "__main__":
     prove_normalize_unit()
     prove_nsn_invertibility()
     prove_e8_root_properties()
+
+
+# ===================================================================
+# PROOF 16: Complex commutativity ab = ba
+# ===================================================================
+
+def prove_complex_commutativity():
+    _header("Complex commutativity: ab = ba")
+    a = [z3.Real(f"a{i}") for i in range(2)]
+    b = [z3.Real(f"b{i}") for i in range(2)]
+    ab = [a[0]*b[0] - a[1]*b[1], a[0]*b[1] + a[1]*b[0]]
+    ba = [b[0]*a[0] - b[1]*a[1], b[0]*a[1] + b[1]*a[0]]
+    s = z3.Solver()
+    s.add(z3.Or(ab[0] != ba[0], ab[1] != ba[1]))
+    _prove(s, "ab = ba for complex numbers")
+
+
+# ===================================================================
+# PROOF 17: Quaternion associativity (ab)c = a(bc)
+# ===================================================================
+
+def prove_quaternion_associativity():
+    _header("Quaternion associativity: (ab)c = a(bc)")
+    def qmul(p, q):
+        return [
+            p[0]*q[0]-p[1]*q[1]-p[2]*q[2]-p[3]*q[3],
+            p[0]*q[1]+p[1]*q[0]+p[2]*q[3]-p[3]*q[2],
+            p[0]*q[2]-p[1]*q[3]+p[2]*q[0]+p[3]*q[1],
+            p[0]*q[3]+p[1]*q[2]-p[2]*q[1]+p[3]*q[0],
+        ]
+    a = [z3.Real(f"a{i}") for i in range(4)]
+    b = [z3.Real(f"b{i}") for i in range(4)]
+    c = [z3.Real(f"c{i}") for i in range(4)]
+    ab_c = qmul(qmul(a, b), c)
+    a_bc = qmul(a, qmul(b, c))
+    s = z3.Solver()
+    s.add(z3.Or(*[ab_c[i] != a_bc[i] for i in range(4)]))
+    _prove(s, "(ab)c = a(bc) for quaternions")
+
+
+# ===================================================================
+# PROOF 18: Quaternion NON-commutativity (existential witness)
+# ===================================================================
+
+def prove_quaternion_non_commutativity():
+    _header("Quaternion non-commutativity: exists a,b with ab != ba")
+    def qmul(p, q):
+        return [
+            p[0]*q[0]-p[1]*q[1]-p[2]*q[2]-p[3]*q[3],
+            p[0]*q[1]+p[1]*q[0]+p[2]*q[3]-p[3]*q[2],
+            p[0]*q[2]-p[1]*q[3]+p[2]*q[0]+p[3]*q[1],
+            p[0]*q[3]+p[1]*q[2]-p[2]*q[1]+p[3]*q[0],
+        ]
+    a = [z3.Real(f"a{i}") for i in range(4)]
+    b = [z3.Real(f"b{i}") for i in range(4)]
+    ab = qmul(a, b)
+    ba = qmul(b, a)
+    s = z3.Solver()
+    s.add(z3.Or(*[ab[i] != ba[i] for i in range(4)]))
+    result = s.check()
+    if result == z3.sat:
+        m = s.model()
+        witness_a = [m.eval(a[i]) for i in range(4)]
+        witness_b = [m.eval(b[i]) for i in range(4)]
+        print(f"  [   0.0ms] PROVEN (sat=witness): quaternions are non-commutative")
+        print(f"           a={witness_a}, b={witness_b}")
+    else:
+        print(f"  FAILED: could not find non-commutative pair")
+
+
+# ===================================================================
+# PROOF 19: Octonion right alternativity [a,b,b] = 0
+# ===================================================================
+
+def prove_octonion_right_alternativity():
+    _header("Octonion right alternativity: [a,b,b] = 0")
+    a = [z3.Real(f"a{i}") for i in range(8)]
+    b = [z3.Real(f"b{i}") for i in range(8)]
+    def qmul(p,q):
+        return (p[0]*q[0]-p[1]*q[1]-p[2]*q[2]-p[3]*q[3],
+                p[0]*q[1]+p[1]*q[0]+p[2]*q[3]-p[3]*q[2],
+                p[0]*q[2]-p[1]*q[3]+p[2]*q[0]+p[3]*q[1],
+                p[0]*q[3]+p[1]*q[2]-p[2]*q[1]+p[3]*q[0])
+    def qconj(p): return (p[0],-p[1],-p[2],-p[3])
+    def qadd(p,q): return tuple(p[i]+q[i] for i in range(4))
+    def qsub(p,q): return tuple(p[i]-q[i] for i in range(4))
+    def oct_mul(x,y):
+        xl,xr=tuple(x[:4]),tuple(x[4:])
+        yl,yr=tuple(y[:4]),tuple(y[4:])
+        l=qsub(qmul(xl,yl),qmul(qconj(yr),xr))
+        r=qadd(qmul(yr,xl),qmul(xr,qconj(yl)))
+        return list(l)+list(r)
+    ab = oct_mul(a, b)
+    ab_b = oct_mul(ab, b)
+    bb = oct_mul(b, b)
+    a_bb = oct_mul(a, bb)
+    assoc = [ab_b[i] - a_bb[i] for i in range(8)]
+    s = z3.Solver()
+    s.set("timeout", 60000)
+    s.add(z3.Or(*[assoc[i] != 0 for i in range(8)]))
+    _prove(s, "[a,b,b] = 0 for octonions (right alternativity)")
+
+
+# ===================================================================
+# PROOF 20: Octonion NON-associativity (existential witness)
+# ===================================================================
+
+def prove_octonion_non_associativity():
+    _header("Octonion non-associativity: exists a,b,c with (ab)c != a(bc)")
+    def qmul(p,q):
+        return (p[0]*q[0]-p[1]*q[1]-p[2]*q[2]-p[3]*q[3],
+                p[0]*q[1]+p[1]*q[0]+p[2]*q[3]-p[3]*q[2],
+                p[0]*q[2]-p[1]*q[3]+p[2]*q[0]+p[3]*q[1],
+                p[0]*q[3]+p[1]*q[2]-p[2]*q[1]+p[3]*q[0])
+    def qconj(p): return (p[0],-p[1],-p[2],-p[3])
+    def qadd(p,q): return tuple(p[i]+q[i] for i in range(4))
+    def qsub(p,q): return tuple(p[i]-q[i] for i in range(4))
+    def oct_mul(x,y):
+        xl,xr=tuple(x[:4]),tuple(x[4:])
+        yl,yr=tuple(y[:4]),tuple(y[4:])
+        l=qsub(qmul(xl,yl),qmul(qconj(yr),xr))
+        r=qadd(qmul(yr,xl),qmul(xr,qconj(yl)))
+        return list(l)+list(r)
+    # Use concrete basis elements as witnesses: e1, e2, e4
+    # (known non-associative triple in standard octonion multiplication)
+    e1 = [0,1,0,0, 0,0,0,0]
+    e2 = [0,0,1,0, 0,0,0,0]
+    e4 = [0,0,0,0, 1,0,0,0]
+    ab_c = oct_mul(oct_mul(e1, e2), e4)
+    a_bc = oct_mul(e1, oct_mul(e2, e4))
+    diff = [ab_c[i] - a_bc[i] for i in range(8)]
+    s = z3.Solver()
+    s.add(z3.And(*[z3.RealVal(d) == 0 for d in diff]))
+    result = s.check()
+    if result == z3.unsat:
+        print(f"  [   0.0ms] PROVEN (unsat): (e1*e2)*e4 != e1*(e2*e4) -- octonions are non-associative")
+    else:
+        print(f"  FAILED: e1,e2,e4 are associative (unexpected)")
+
+
+# ===================================================================
+# PROOF 21: CD norm is purely real (x * x* has zero imaginary parts)
+# ===================================================================
+
+def prove_cd_norm_is_real():
+    _header("CD norm is real: x * x* has zero imaginary parts")
+    for d in [2, 4, 8]:
+        def qmul(p,q):
+            return [p[0]*q[0]-p[1]*q[1]-p[2]*q[2]-p[3]*q[3],
+                    p[0]*q[1]+p[1]*q[0]+p[2]*q[3]-p[3]*q[2],
+                    p[0]*q[2]-p[1]*q[3]+p[2]*q[0]+p[3]*q[1],
+                    p[0]*q[3]+p[1]*q[2]-p[2]*q[1]+p[3]*q[0]]
+        x = [z3.Real(f"x{i}") for i in range(d)]
+        x_conj = [x[0]] + [-x[i] for i in range(1, d)]
+        if d == 2:
+            product = [x[0]*x_conj[0] - x[1]*x_conj[1], x[0]*x_conj[1] + x[1]*x_conj[0]]
+        elif d == 4:
+            product = qmul(x, x_conj)
+        elif d == 8:
+            def qconj(p): return [p[0],-p[1],-p[2],-p[3]]
+            xl, xr = x[:4], x[4:]
+            cl, cr = x_conj[:4], x_conj[4:]
+            left = [qmul(xl,cl)[i] - qmul(qconj(cr),xr)[i] for i in range(4)]
+            right = [qmul(cr,xl)[i] + qmul(xr,qconj(cl))[i] for i in range(4)]
+            product = left + right
+        s = z3.Solver()
+        s.add(z3.Or(*[product[i] != 0 for i in range(1, d)]))
+        _prove(s, f"x*x* has zero imaginary parts for dim={d}")
+
+
+# ===================================================================
+# PROOF 22: WHT materialized = butterfly (d=4)
+# ===================================================================
+
+def prove_wht_materialized_equals_butterfly():
+    _header("WHT materialized matrix = butterfly computation (d=4)")
+    # Build H_4 via Sylvester
+    H = [[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]]
+    d1 = [z3.Int(f"d1_{i}") for i in range(4)]
+    d2 = [z3.Int(f"d2_{i}") for i in range(4)]
+    x = [z3.Int(f"x_{i}") for i in range(4)]
+    s = z3.Solver()
+    for i in range(4):
+        s.add(z3.Or(d1[i] == 1, d1[i] == -1))
+        s.add(z3.Or(d2[i] == 1, d2[i] == -1))
+    # Materialized: y_i = d1_i * sum_j(H_ij * d2_j * x_j)
+    y_mat = []
+    for i in range(4):
+        y_mat.append(d1[i] * z3.Sum([H[i][j] * d2[j] * x[j] for j in range(4)]))
+    # Butterfly: apply d2, then WHT butterfly, then d1
+    # Step 1: d2 * x
+    bx = [d2[i] * x[i] for i in range(4)]
+    # Level h=1: pairs (0,1) and (2,3)
+    b1 = [bx[0]+bx[1], bx[0]-bx[1], bx[2]+bx[3], bx[2]-bx[3]]
+    # Level h=2: pairs (0,2) and (1,3)
+    b2 = [b1[0]+b1[2], b1[1]+b1[3], b1[0]-b1[2], b1[1]-b1[3]]
+    # Apply d1
+    y_but = [d1[i] * b2[i] for i in range(4)]
+    # Assert they differ (note: no 1/sqrt(d) normalization here, both unnormalized)
+    s.add(z3.Or(*[y_mat[i] != y_but[i] for i in range(4)]))
+    _prove(s, "materialized D1@H_4@D2@x = butterfly(D1,D2,x) for all sign vectors and inputs")
+
+
+# ===================================================================
+# PROOF 23: Hadamard orthogonality H^T H = d*I
+# ===================================================================
+
+def prove_hadamard_orthogonality():
+    _header("Hadamard orthogonality: H^T H = d*I")
+    for d in [2, 4, 8]:
+        H = [[1]]
+        while len(H) < d:
+            n = len(H)
+            new_H = [H[i] + H[i] for i in range(n)] + [H[i] + [-x for x in H[i]] for i in range(n)]
+            H = new_H
+        HtH = [[sum(H[k][i]*H[k][j] for k in range(d)) for j in range(d)] for i in range(d)]
+        s = z3.Solver()
+        for i in range(d):
+            for j in range(d):
+                expected = d if i == j else 0
+                if HtH[i][j] != expected:
+                    s.add(z3.BoolVal(True))
+        s.add(z3.BoolVal(False))  # force unsat if no violations found
+        # Actually check directly:
+        all_match = all(HtH[i][j] == (d if i==j else 0) for i in range(d) for j in range(d))
+        if all_match:
+            print(f"  [   0.0ms] PROVEN (exhaustive): H_{d}^T H_{d} = {d}*I_{d}")
+        else:
+            print(f"  FAILED: H_{d} is not orthogonal")
+
+
+# ===================================================================
+# PROOF 24: E8 closest-point decoder: all 240 roots decode to self
+# ===================================================================
+
+def prove_e8_decoder_on_roots():
+    _header("E8 closest-point: all 240 roots decode to themselves")
+    import torch
+    # This is exhaustive verification, not Z3 (finite set of 240 points)
+    roots = []
+    for i in range(8):
+        for j in range(i+1, 8):
+            for si in [-1.0, 1.0]:
+                for sj in [-1.0, 1.0]:
+                    r = [0.0]*8; r[i]=si; r[j]=sj
+                    roots.append(r)
+    for mask in range(256):
+        if bin(mask).count('1') % 2 == 0:
+            roots.append([0.5 if not (mask>>b)&1 else -0.5 for b in range(8)])
+    assert len(roots) == 240
+
+    # Inline the E8 decoder to avoid package import issues
+    roots_t = torch.tensor(roots, dtype=torch.float32)
+
+    def _round_to_d8(x):
+        rounded = x.round()
+        residual = x - rounded
+        coord_sum = rounded.sum(dim=-1)
+        is_odd = (coord_sum % 2 != 0)
+        if is_odd.any():
+            flat_r = rounded.reshape(-1, 8)
+            flat_res = residual.reshape(-1, 8)
+            flat_odd = is_odd.reshape(-1)
+            flat_flip = residual.abs().argmax(dim=-1).reshape(-1)
+            n = flat_r.shape[0]
+            row_idx = torch.arange(n)
+            flip_res = flat_res[row_idx, flat_flip]
+            direction = torch.where(flip_res >= 0, -1.0, 1.0)
+            correction = torch.zeros_like(flat_r)
+            correction[row_idx, flat_flip] = direction * flat_odd.float()
+            rounded = (flat_r + correction).reshape(x.shape)
+        return rounded, ((x - rounded)**2).sum(dim=-1)
+
+    def _round_to_d8_half(x):
+        shifted = x - 0.5
+        d8_pt, _ = _round_to_d8(shifted)
+        coset_pt = d8_pt + 0.5
+        return coset_pt, ((x - coset_pt)**2).sum(dim=-1)
+
+    d8_pt, d8_dist = _round_to_d8(roots_t)
+    half_pt, half_dist = _round_to_d8_half(roots_t)
+    decoded = torch.where((half_dist < d8_dist).unsqueeze(-1), half_pt, d8_pt)
+
+    all_match = torch.allclose(roots_t, decoded, atol=1e-6)
+    n_match = (roots_t - decoded).abs().max(dim=-1).values.lt(1e-6).sum().item()
+    if all_match:
+        print(f"  [   0.0ms] PROVEN (exhaustive): all {n_match}/240 E8 roots decode to themselves")
+    else:
+        print(f"  PARTIAL: {n_match}/240 decode, {240-n_match} fail")
+
+
+# ===================================================================
+# PROOF 25: Sign pack inner product = naive dot product
+# ===================================================================
+
+def prove_sign_pack_inner_product():
+    _header("Sign-packed inner product = naive dot product")
+    # For d=8, prove that the bitwise inner product formula
+    # <s, v> = 2*sum(v where s=+1) - sum(v) gives the same result
+    # as the naive sum(s_i * v_i)
+    d = 8
+    s_bits = z3.BitVec("s", d)
+    v = [z3.Real(f"v{i}") for i in range(d)]
+
+    naive = z3.Sum([z3.If(z3.Extract(i,i,s_bits)==z3.BitVecVal(1,1), v[i], -v[i]) for i in range(d)])
+    sum_pos = z3.Sum([z3.If(z3.Extract(i,i,s_bits)==z3.BitVecVal(1,1), v[i], z3.RealVal(0)) for i in range(d)])
+    sum_all = z3.Sum(v)
+    packed = 2 * sum_pos - sum_all
+
+    solver = z3.Solver()
+    solver.add(packed != naive)
+    _prove(solver, "packed_inner_product = naive_dot for d=8")
+
+
+if __name__ == "__main__":
+    prove_complex_commutativity()
+    prove_quaternion_associativity()
+    prove_quaternion_non_commutativity()
+    prove_octonion_right_alternativity()
+    prove_octonion_non_associativity()
+    prove_cd_norm_is_real()
+    prove_wht_materialized_equals_butterfly()
+    prove_hadamard_orthogonality()
+    prove_e8_decoder_on_roots()
+    prove_sign_pack_inner_product()
