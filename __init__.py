@@ -97,6 +97,12 @@ try:
     # Smart configuration presets
     from .config import TurboQuantConfig, KVCacheConfig
 
+    # Quantization Force: unified Lagrange-optimal bit allocation
+    from .quantization_force import (
+        RegionStats, quantization_force, lagrange_optimal_allocation,
+        compute_structure_factor, unified_bit_allocation,
+    )
+
 except ImportError:
     # Loaded outside package context (pytest direct import). Skip.
     pass

@@ -112,49 +112,37 @@ def allocate_bits_to_levels(
     Returns:
         New list of TowerLevel with bits assigned.
     """
-    result = [TowerLevel(l.dim, min_bits, l.start, l.end) for l in levels]
-
-    def current_total():
-        return sum(l.dim * l.bits for l in result)
+    from .quantization_force import RegionStats, lagrange_optimal_allocation
 
     if calibration_data is not None:
-        # Empirical mode: measure per-level MSE at each bit-width
-        level_mse_cache = _calibrate_level_mse(levels, calibration_data, min_bits, max_bits)
+        # Empirical mode: measure per-level variance from data
+        variances = []
+        for level in levels:
+            level_data = calibration_data[:, level.start:level.end]
+            variances.append(level_data.var().item())
     else:
-        level_mse_cache = None
+        # Theoretical: post-rotation per-coord variance = 1/dim
+        variances = [1.0 / level.dim for level in levels]
 
-    while current_total() < budget_bits:
-        best_idx = None
-        best_marginal = -1.0
+    # Average bits per element from total budget
+    total_elements = sum(level.dim for level in levels)
+    avg_bits = budget_bits / max(total_elements, 1)
 
-        for i, level in enumerate(result):
-            if level.bits >= max_bits:
-                continue
-            if current_total() + level.dim > budget_bits:
-                continue
+    regions = [
+        RegionStats(
+            index=i,
+            n_elements=level.dim,
+            variance=max(variances[i], 1e-30),
+        )
+        for i, level in enumerate(levels)
+    ]
 
-            if level_mse_cache is not None:
-                # Empirical: marginal MSE reduction per coordinate from adding 1 bit
-                mse_current = level_mse_cache[i].get(level.bits, 1.0)
-                mse_next = level_mse_cache[i].get(level.bits + 1, mse_current * 0.25)
-                marginal = (mse_current - mse_next) * level.dim
-            else:
-                # Theoretical: Lloyd-Max distortion halves per extra bit (approx)
-                # D(b) ~ sigma^2 * pi * sqrt(3) / (2 * 4^b)
-                # Marginal: D(b) - D(b+1) = D(b) * (1 - 1/4) = 0.75 * D(b)
-                sigma2 = 1.0 / level.dim  # post-rotation per-coord variance
-                distortion_b = sigma2 * math.sqrt(3) * math.pi / (2 * 4 ** level.bits)
-                marginal = 0.75 * distortion_b * level.dim
+    bits = lagrange_optimal_allocation(regions, avg_bits, min_bits, max_bits)
 
-            if marginal > best_marginal:
-                best_marginal = marginal
-                best_idx = i
-
-        if best_idx is None:
-            break
-        result[best_idx].bits += 1
-
-    return result
+    return [
+        TowerLevel(level.dim, b, level.start, level.end)
+        for level, b in zip(levels, bits)
+    ]
 
 
 def _calibrate_level_mse(

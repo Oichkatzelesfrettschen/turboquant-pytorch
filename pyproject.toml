@@ -48,6 +48,7 @@ py-modules = [
     "nsn_preprocess", "rotations", "sign_pack", "spectral",
     "tensor_decomposition", "triton_kernels", "turboquant",
     "adaptive", "algebra_foundations", "cariow", "cuda_ops", "zd_bias",
+    "quantization_force",
 ]
 
 [tool.pytest.ini_options]

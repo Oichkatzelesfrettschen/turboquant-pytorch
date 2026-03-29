@@ -215,6 +215,8 @@ def allocate_per_layer_bits(
     Returns:
         List of per-layer bit allocations.
     """
+    from .quantization_force import unified_bit_allocation
+
     n_layers = len(cache.layers) if hasattr(cache, 'layers') else len(cache)
     variances = []
 
@@ -225,22 +227,4 @@ def allocate_per_layer_bits(
             keys = cache[li][0].float()
         variances.append(keys.var().item())
 
-    # Lower variance = harder to quantize = needs more bits
-    # Score = 1/variance (normalized)
-    inv_var = [1.0 / (v + 1e-8) for v in variances]
-    total_inv = sum(inv_var)
-
-    # Allocate: distribute budget proportional to difficulty
-    # Start everyone at min_bits, then distribute extra budget
-    bits = [min_bits] * n_layers
-    extra_budget = int(total_budget * n_layers) - min_bits * n_layers
-
-    # Sort layers by difficulty (hardest first)
-    difficulty_order = sorted(range(n_layers), key=lambda i: inv_var[i], reverse=True)
-
-    for li in difficulty_order:
-        while bits[li] < max_bits and extra_budget > 0:
-            bits[li] += 1
-            extra_budget -= 1
-
-    return bits
+    return unified_bit_allocation(variances, total_budget, min_bits=min_bits, max_bits=max_bits)
