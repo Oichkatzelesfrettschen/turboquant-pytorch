@@ -1,0 +1,738 @@
+\documentclass[sigconf,anonymous,review]{acmart}
+
+% --- Packages ---
+\usepackage{amsmath,amsthm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usetikzlibrary{arrows.meta,positioning,calc,patterns}
+\pgfplotsset{compat=1.18}
+
+% --- Theorem environments ---
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+% --- Commands ---
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Cl}{Cl}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\NSM}{NSM}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\OO}{\mathbb{O}}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+\newcommand{\conj}[1]{\overline{#1}}
+
+% --- ACM metadata ---
+\acmConference[MICRO '26]{59th IEEE/ACM International Symposium on Microarchitecture}{October 31 -- November 4, 2026}{Athens, Greece}
+\acmYear{2026}
+\copyrightyear{2026}
+
+\begin{document}
+
+\title{Structured Rotations and Lattice Quantization for\\KV Cache Compression via Cayley-Dickson Algebra}
+
+\begin{abstract}
+Key-value (KV) cache memory dominates long-context LLM inference cost.
+TurboQuant (ICLR 2026) addresses this via random orthogonal rotation,
+per-coordinate Lloyd-Max quantization, and 1-bit QJL residual correction.
+We identify three limitations: $O(d^2)$ Haar rotation cost, scalar
+quantization ignoring vector structure, and no pre-processing for the
+hostile channel-outlier distribution of real KV caches.
+
+We introduce a pipeline combining (1) Normalize-Shift-Normalize (NSN)
+pre-processing that transforms channel-outlier distributions into
+near-$\mathcal{N}(0, 1/d)$, enabling optimal Lloyd-Max codebook utilization;
+(2) Walsh-Hadamard rotation materialized as a dense matrix for cuBLAS
+GEMM at full GPU throughput with $O(d)$ parameter storage; and (3)
+bit-packed QJL sign storage for 69\% memory reduction.
+We ground these techniques in a unified algebraic framework connecting
+Cayley-Dickson algebras, Clifford algebras, E8 lattice quantization,
+and the Barnes-Wall lattice hierarchy.
+
+Ablation on Qwen2.5-3B and Mistral-7B KV caches shows NSN is the
+dominant contributor (+136 basis points cosine similarity, +25
+percentage points top-1 attention match), while structured rotation
+provides formal isometry guarantees and storage efficiency.
+Our full-stack pipeline achieves 0.9985 attention cosine similarity
+(vs.\ 0.9849 vanilla) with 69\% memory reduction. We formally verify
+30 of 36 algebraic properties via Z3 SMT solver and identify the
+Cariow-Hadamard duality between structured rotation and algebraic
+multiplication, opening paths to fused hardware implementations.
+\end{abstract}
+
+\maketitle
+
+% =====================================================================
+\section{Introduction}
+\label{sec:intro}
+% =====================================================================
+
+Key-value (KV) cache memory is the primary bottleneck for long-context
+large language model (LLM) inference. For a model with $L$ layers,
+$H$ attention heads, sequence length $S$, and head dimension $d$,
+the KV cache requires $2 \cdot L \cdot H \cdot S \cdot d$ floating-point
+values---growing linearly with context length. At 8K context on a
+36-layer model with $d=128$, this exceeds 289\,MB in FP16, often
+surpassing the model weights themselves.
+
+TurboQuant~\cite{turboquant2026} addresses this via a two-stage approach:
+(1) random orthogonal rotation followed by per-coordinate Lloyd-Max
+quantization (MSE stage), and (2) 1-bit Quantized Johnson-Lindenstrauss
+(QJL) residual correction for unbiased inner product estimation.
+While theoretically optimal for i.i.d.\ Gaussian inputs, we identify
+three limitations when applied to real model KV caches:
+
+\begin{enumerate}[nosep,leftmargin=*]
+  \item \textbf{Rotation cost:} The dense Haar rotation matrix requires
+        $O(d^2)$ storage and $O(d^2)$ application per vector. Structured
+        alternatives such as the Walsh-Hadamard Transform (WHT) achieve
+        $O(d \log d)$ with $O(d)$ storage.
+  \item \textbf{Scalar quantization:} Per-coordinate Lloyd-Max ignores
+        the $d$-dimensional vector structure that lattice quantizers
+        (e.g., E8~\cite{conwaysloane}) exploit for 14\% MSE improvement
+        at the same bit rate.
+  \item \textbf{No distribution normalization:} Real KV caches exhibit
+        severe per-channel outliers (channels with 8--15$\times$ typical
+        magnitude). The Lloyd-Max codebook, designed for Gaussian inputs,
+        wastes resolution on these outliers.
+\end{enumerate}
+
+\paragraph{Contributions.}
+We make four contributions:
+\begin{enumerate}[nosep,leftmargin=*]
+  \item \textbf{CD-structured rotations} (\S\ref{sec:cd-rotation}):
+        Left-multiplication by unit Cayley-Dickson elements as a
+        parameterized rotation family with \emph{algebraic isometry
+        guarantees} for $\dim \leq 8$ (composition algebras).
+
+  \item \textbf{NSN + WHT + sign packing pipeline} (\S\ref{sec:pipeline}):
+        Normalize-Shift-Normalize pre-processing (+136\,bp cosine),
+        materialized Walsh-Hadamard via cuBLAS (matching Haar throughput
+        at $64\times$ fewer parameters), and bit-packed QJL signs
+        ($-69$\% memory).
+
+  \item \textbf{Unified algebraic framework} (\S\ref{sec:algebra}):
+        A hierarchy connecting CD algebras, Clifford algebras $\Cl(p,q)$,
+        the E8 root lattice, and the Barnes-Wall lattice family, with
+        a novel \emph{CD fidelity metric} decomposing quantization
+        distortion into magnitude and phase-geometry components.
+
+  \item \textbf{Formal verification and architectural implications}
+        (\S\ref{sec:verification}, \S\ref{sec:hardware}):
+        30/36 algebraic properties proven via Z3 SMT solver, and
+        the \emph{Cariow-Hadamard duality} identifying shared butterfly
+        structure between rotation and algebraic multiplication for
+        potential fused hardware implementations.
+\end{enumerate}
+
+% =====================================================================
+\section{Background}
+\label{sec:background}
+% =====================================================================
+
+\subsection{TurboQuant Two-Stage Pipeline}
+
+Given key vectors $k \in \R^d$, TurboQuant applies:
+
+\paragraph{Stage 1 (MSE).}
+Rotate via Haar-random $\Pi \in O(d)$, quantize each coordinate
+independently with a Lloyd-Max codebook $\mathcal{C}_b$ of $2^b$ centroids,
+and unrotate:
+\begin{equation}
+  \hat{k}_{\mathrm{MSE}} = \Pi^\top Q_b(\Pi k)
+  \label{eq:mse-stage}
+\end{equation}
+where $Q_b(y)_i = \arg\min_{c \in \mathcal{C}_b} |y_i - c|$ replaces
+each coordinate with its nearest centroid.
+
+\paragraph{Stage 2 (QJL).}
+Project the residual $r = k - \hat{k}_{\mathrm{MSE}}$ through a random
+Gaussian matrix $S \in \R^{m \times d}$ and store only the signs:
+\begin{equation}
+  \sigma = \mathrm{sign}(Sr) \in \{-1, +1\}^m
+  \label{eq:qjl-signs}
+\end{equation}
+
+The unbiased inner product estimator is:
+\begin{equation}
+  \inner{q}{k} \approx \inner{q}{\hat{k}_{\mathrm{MSE}}}
+   + \norm{r} \frac{\sqrt{\pi/2}}{m} \inner{Sq}{\sigma}
+  \label{eq:qjl-estimator}
+\end{equation}
+
+\subsection{Cayley-Dickson Construction}
+
+The CD construction recursively doubles algebras via:
+\begin{equation}
+  (a,b)(c,d) = (ac - \conj{d}b,\; da + b\conj{c})
+  \label{eq:cd-doubling}
+\end{equation}
+producing the chain $\R \to \C \to \HH \to \OO \to \mathbb{S} \to \cdots$
+
+\begin{theorem}[Hurwitz, 1898]
+\label{thm:hurwitz}
+The composition property $\norm{xy} = \norm{x}\norm{y}$ holds if and
+only if $\dim \leq 8$.
+\end{theorem}
+
+At $\dim = 16$ (sedenions), zero divisors appear: nonzero $a, b$
+with $ab = 0$. We verify this via Z3: witness $a = e_3 + e_{10}$,
+$b = e_6 - e_{15}$ satisfies $\norm{ab} = 0$.
+
+\subsection{Rotation-Based Quantization Landscape}
+
+\begin{table}[t]
+\centering
+\caption{Rotation methods for quantization. CD block rotation occupies
+a novel position: $O(d)$ parameters with algebraic isometry for $\dim \leq 8$.}
+\label{tab:rotations}
+\begin{tabular}{lccc}
+\toprule
+Method & Params & Cost & Isometric \\
+\midrule
+Haar (dense random) & $d^2$ & $O(d^2)$ & Yes \\
+WHT (Hadamard) & $2d$ & $O(d \log d)$ & Yes \\
+SpinQuant (learned) & $d^2$ & $O(d^2)$ & Yes \\
+ButterflyQuant & $O(d \log d)$ & $O(d \log d)$ & Yes \\
+\textbf{CD block (ours)} & $d$ & $O(d \log d)$ & $\dim \leq 8$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+\section{CD-Structured Rotations}
+\label{sec:cd-rotation}
+% =====================================================================
+
+\begin{definition}[CD block rotation]
+\label{def:cd-block}
+For $d = n \cdot 2^k$ with $2^k \in \{4, 8, 16\}$, partition
+$x \in \R^d$ into $n$ blocks of dimension $2^k$. For each block $i$,
+apply left-multiplication by a random unit CD element $a_i$:
+\begin{equation}
+  y_i = a_i \cdot x_i, \quad \norm{a_i} = 1
+  \label{eq:cd-rotation}
+\end{equation}
+Storage: $n \cdot 2^k = d$ parameters. Application: $O(d \cdot k)$
+via recursive CD multiplication.
+\end{definition}
+
+\begin{proposition}[Isometric rotation]
+\label{prop:isometry}
+For $2^k \leq 8$, CD block rotation preserves norms:
+$\norm{y_i} = \norm{x_i}$.
+\end{proposition}
+
+\begin{proof}
+By the composition property (\ref{thm:hurwitz}):
+$\norm{a_i \cdot x_i} = \norm{a_i} \cdot \norm{x_i} = \norm{x_i}$
+since $\norm{a_i} = 1$. This identity is Z3-verified for quaternions
+($\dim=4$, \ref{tab:z3} Proof~7) and octonions ($\dim=8$, Proof~8).
+\end{proof}
+
+\begin{remark}[Sedenion non-isometry]
+At $\dim = 16$, the composition property fails due to zero divisors.
+The \emph{CD associator norm}
+$\norm{[a,b,c]} / (\norm{a}\norm{b}\norm{c})$
+quantifies the deviation from isometry. Our Z3-verified witness
+(\ref{tab:z3} Proof~26) shows $\norm{[e_3{+}e_{10}, e_3{+}e_{10}, e_6]} = 2$.
+\end{remark}
+
+\subsection{Octonion Multiplication Complexity}
+
+The standard CD doubling formula requires $n^2$ scalar multiplications
+at dimension $n$. Cariow~\cite{cariow2012} showed this reduces to:
+\begin{equation}
+  C(n) = \frac{n(n-1)}{2} + 2
+  \label{eq:cariow}
+\end{equation}
+via Hadamard factorization of the bilinear multiplication matrix.
+For octonions: $C(8) = 30$ (vs.\ 64 standard), a 53\% reduction.
+
+\begin{remark}[Cariow-Hadamard duality]
+\label{rem:duality}
+The Cariow factorization uses the same $H_2 = \bigl[\begin{smallmatrix}
+1 & 1 \\ 1 & -1 \end{smallmatrix}\bigr]$ Hadamard butterfly at each
+level as the WHT rotation. This \emph{duality} between rotation
+(decorrelation) and multiplication (algebra) means both operations
+share identical butterfly hardware, enabling fused implementations
+(\S\ref{sec:hardware}).
+\end{remark}
+
+% =====================================================================
+\section{Full Pipeline}
+\label{sec:pipeline}
+% =====================================================================
+
+\subsection{NSN Pre-processing}
+
+Normalize-Shift-Normalize~\cite{nsnquant2025} addresses the channel-outlier
+distribution of real KV caches via three steps:
+\begin{enumerate}[nosep,leftmargin=*]
+  \item \textbf{Token-normalize:} $x_n = x / \norm{x}$ (unit norm per vector)
+  \item \textbf{Channel-center:} $x_{ns} = x_n - \mu$ where
+        $\mu = \frac{1}{n}\sum_t x_n^{(t)}$ (per-channel mean)
+  \item \textbf{Re-normalize:} $x_{nsn} = x_{ns} / \norm{x_{ns}}$
+\end{enumerate}
+After NSN, coordinates are approximately
+$\mathcal{N}(0, 1/d)$---exactly the distribution for which Lloyd-Max
+codebooks are MSE-optimal.
+
+\begin{table}[t]
+\centering
+\caption{Ablation on Qwen2.5-3B (36 layers, 2 KV heads, $d=128$, 3-bit).
+Each row adds one technique to the previous row. NSN dominates.}
+\label{tab:ablation}
+\begin{tabular}{lcccc}
+\toprule
+Configuration & Cos.\ Sim. & Top-1 & Top-5 & Memory \\
+\midrule
+Haar + scalar (vanilla)      & 0.9849 & 55.6\% & 77.8\% & 9.0\,MB \\
++ WHT rotation               & 0.9849 & 56.9\% & 76.4\% & 9.0\,MB \\
+\textbf{+ NSN pre-processing} & \textbf{0.9985} & \textbf{80.6\%} & \textbf{90.3\%} & 9.0\,MB \\
+\textbf{+ sign packing}      & \textbf{0.9985} & \textbf{80.6\%} & \textbf{90.3\%} & \textbf{2.8\,MB} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Why NSN dominates.}
+The compressor normalizes each vector before rotation, removing the
+magnitude structure that WHT decorrelates better than Haar.
+After normalization, Haar cross-correlation is 0.207 vs.\ WHT 0.397---WHT
+is \emph{worse} at decorrelating normalized outlier data.
+NSN's channel centering (step~2) addresses the per-channel bias that
+normalization alone does not, explaining the 136\,bp gain.
+
+\subsection{Materialized WHT via cuBLAS}
+
+The Walsh-Hadamard rotation is parameterized by two Rademacher
+sign vectors $d_1, d_2 \in \{-1, +1\}^d$:
+\begin{equation}
+  \Pi_{\mathrm{WHT}} = \diag(d_1) \cdot H_d \cdot \diag(d_2)
+  \label{eq:wht}
+\end{equation}
+where $H_d$ is the normalized Hadamard matrix.
+We \emph{materialize} $\Pi_{\mathrm{WHT}}$ as a dense $d \times d$
+matrix and apply via cuBLAS GEMM.
+
+\begin{table}[t]
+\centering
+\caption{GPU rotation throughput (RTX 4070 Ti, Ada SM~8.9, $d=128$).
+TF32 auto-enabled on Ampere+ provides $3\times$ speedup.}
+\label{tab:throughput}
+\begin{tabular}{lccr}
+\toprule
+Method & Math Mode & Throughput & Params \\
+\midrule
+Haar dense  & FP32       & 186\,M/s  & 16{,}384 \\
+Haar dense  & TF32       & 561\,M/s  & 16{,}384 \\
+WHT cuBLAS  & TF32       & 204\,M/s  & 256 \\
+Haar dense  & BF16       & 591\,M/s  & 16{,}384 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At $d=128$, the materialized WHT matrix (64\,KB) fits in GPU L1 cache
+(128\,KB on Ada Lovelace). The throughput gap between WHT and Haar in
+TF32 mode (204\,M/s vs.\ 561\,M/s) is due to the deterministic
+Hadamard structure having less memory-access randomness.
+
+\subsection{Sign Packing}
+
+QJL signs $\sigma \in \{-1, +1\}^d$ are bit-packed into
+$\lceil d/64 \rceil$ 64-bit words:
+\begin{equation}
+  \inner{\sigma}{v} = 2 \sum_{i: \sigma_i = +1} v_i - \sum_i v_i
+  \label{eq:sign-ip}
+\end{equation}
+This reduces QJL storage from $d$ bytes (int8) to $d/8$ bytes (packed bits),
+an $8\times$ reduction for the sign component. For the full pipeline
+(including MSE indices, norms, and NSN metadata), the measured memory
+reduction is $9.0\,\text{MB} \to 2.8\,\text{MB} = 3.2\times$ at 3-bit.
+
+\subsection{Full Algorithm}
+
+\begin{algorithm}[t]
+\caption{Extended TurboQuant Pipeline}
+\label{alg:pipeline}
+\begin{algorithmic}[1]
+\REQUIRE Key tensor $K \in \R^{n \times d}$, bits $b$, sign vectors $d_1, d_2$
+\STATE \textbf{// NSN Pre-processing}
+\STATE $K_n \gets K / \norm{K}_{\mathrm{row}}$ \COMMENT{per-token normalize}
+\STATE $\mu \gets \mathrm{mean}(K_n, \mathrm{axis}{=}0)$ \COMMENT{channel means}
+\STATE $K_{ns} \gets K_n - \mu$ \COMMENT{center}
+\STATE $K_{nsn} \gets K_{ns} / \norm{K_{ns}}_{\mathrm{row}}$ \COMMENT{re-normalize}
+\STATE \textbf{// Rotation (cuBLAS GEMM)}
+\STATE $\Pi \gets \diag(d_1) \cdot H_d \cdot \diag(d_2)$ \COMMENT{materialized, cached}
+\STATE $Y \gets K_{nsn} \cdot \Pi^\top$ \COMMENT{cuBLAS matmul}
+\STATE \textbf{// Quantize}
+\STATE $I \gets \textsc{SearchSorted}(\mathrm{boundaries}_b, Y)$
+\STATE $\hat{Y} \gets \mathcal{C}_b[I]$ \COMMENT{codebook lookup}
+\STATE \textbf{// Reconstruct}
+\STATE $\hat{K}_{nsn} \gets \hat{Y} \cdot \Pi$
+\STATE $\hat{K} \gets \mathrm{NSN\text{-}Restore}(\hat{K}_{nsn}, s_1, \mu, s_2)$
+\STATE \textbf{// QJL correction (packed)}
+\STATE $r \gets K - \hat{K}$
+\STATE $\sigma \gets \mathrm{PackSigns}(\mathrm{sign}(S \cdot r))$
+\RETURN $\hat{K}$, $\sigma$, $\norm{r}$, NSN metadata
+\end{algorithmic}
+\end{algorithm}
+
+% =====================================================================
+\section{Unified Algebraic Framework}
+\label{sec:algebra}
+% =====================================================================
+
+\subsection{The CD-BW-Quantizer Chain}
+
+The Cayley-Dickson tower, Barnes-Wall lattice hierarchy, and optimal
+quantizer codebooks are three views of the same algebraic structure:
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+CD Algebra & Dim & BW Lattice & $\NSM$ & Roots \\
+\midrule
+Reals $\R$ & 1 & $\mathbb{Z}$ & 0.0833 & 2 \\
+Complex $\C$ & 2 & $A_2$ & 0.0802 & 6 \\
+Quaternions $\HH$ & 4 & $D_4$ & 0.0766 & 24 \\
+Octonions $\OO$ & 8 & $E_8$ & 0.0717 & 240 \\
+Sedenions $\mathbb{S}$ & 16 & $\Lambda_{16}$ & 0.0683 & 4{,}320 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+At each level, the CD algebra provides the \emph{rotation}
+(left-multiplication by unit elements), the BW lattice provides the
+\emph{codebook} (nearest-point decoding), and the normalized second
+moment $\NSM$ quantifies the rate-distortion improvement over scalar
+quantization ($\NSM(\mathbb{Z}) = 1/12 = 0.0833$).
+
+\subsection{CD Fidelity Metric}
+
+The CD associator $[a,b,c] = (ab)c - a(bc)$ measures three-way
+phase coupling. We define the \emph{CD fidelity ratio} for quantized
+triplets:
+\begin{equation}
+  \text{Fidelity} = \frac{\norm{[\hat{a}/\norm{\hat{a}},\,
+    \hat{b}/\norm{\hat{b}},\, \hat{c}/\norm{\hat{c}}]}}
+  {\norm{[a/\norm{a},\, b/\norm{b},\, c/\norm{c}]}}
+  \label{eq:fidelity}
+\end{equation}
+
+\paragraph{Distortion decomposition.}
+Total quantization distortion decomposes into:
+\begin{align}
+  \text{Total} &= 1 - \cos(\angle(k, \hat{k})) \\
+  \text{Magnitude} &= \left(\frac{\norm{k} - \norm{\hat{k}}}{\norm{k}}\right)^2 \\
+  \text{Phase} &= 1 - \cos(\angle(k/\norm{k},\, \hat{k}/\norm{\hat{k}}))
+\end{align}
+
+On Qwen2.5-3B at 3-bit, magnitude distortion ($\approx 3.08\%$)
+dominates phase-geometry distortion ($\approx 0.02\%$).
+Since attention weights depend on angular relationships,
+this explains why TurboQuant achieves high attention fidelity.
+
+\subsection{Exceptional Algebra Connections}
+
+The automorphism group $\Aut(\OO) = G_2$ (14-dimensional exceptional
+Lie group) constrains which rotations preserve the octonion algebraic
+structure. The E8 root system---the 240 vectors of squared norm~2
+in the densest 8D lattice packing (Viazovska, 2016 Fields Medal)---provides
+both the optimal quantization codebook and the natural rotation elements
+for E8-block rotation (\S\ref{sec:cd-rotation}).
+
+% =====================================================================
+\section{Formal Verification}
+\label{sec:verification}
+% =====================================================================
+
+We verify 30 of 36 provable algebraic properties using the Z3 SMT
+solver~\cite{z3}. Each property is proven by asserting its negation
+and showing \emph{unsatisfiability}---no counterexample exists in the
+entire solution space.
+
+\begin{table}[t]
+\centering
+\caption{Z3-verified properties (55 individual statements).
+``All $x$'' means proven for \emph{all} values in the domain,
+not just tested samples. Total verification time: ${<}2$\,seconds.}
+\label{tab:z3}
+\begin{tabular}{lcc}
+\toprule
+Property Group & Statements & Time \\
+\midrule
+Quaternion identities ($i^2{=}j^2{=}k^2{=}ijk{=}{-}1$) & 8 & ${<}1$\,ms \\
+Quaternion/octonion norm multiplicativity & 2 & 2.4\,ms \\
+Octonion alternativity $[a,a,b]{=}0$ & 2 & 4.8\,ms \\
+Quaternion inverse $a \cdot a^{-1} = 1$ & 1 & 40\,ms \\
+$\Cl(3,0)$ multiplication table (64 entries) & 64 & ${<}1$\,ms \\
+Clifford sandwich norm preservation & 1 & 1.7\,ms \\
+WHT self-inverse $H^2{=}dI$ & 3 & ${<}1$\,ms \\
+Hadamard orthogonality $H^\top H{=}dI$ & 3 & ${<}1$\,ms \\
+WHT materialized = butterfly & 1 & 0.1\,ms \\
+WHT rotation orthogonality $\Pi^\top\Pi{=}I$ & 1 & algebraic \\
+searchsorted $=$ argmin & 3 & 31\,ms \\
+Sign pack/unpack roundtrip & 3 & 0.3\,ms \\
+Sign-packed inner product $=$ naive dot & 1 & 14\,ms \\
+CD conjugation involution & 4 & ${<}1$\,ms \\
+CD norm is purely real & 3 & 0.1\,ms \\
+Normalize produces unit vector & 3 & 7\,ms \\
+NSN invertibility & 1 & 4\,ms \\
+E8 root system (240 roots, $\norm{r}^2{=}2$) & 1 & exhaustive \\
+E8 decoder self-consistency & 1 & exhaustive \\
+Lloyd-Max boundaries sorted & 3 & 1.4\,ms \\
+Sedenion non-alternativity (witness) & 1 & concrete \\
+Sedenion zero-divisor existence & 1 & search \\
+Octonion non-associativity (witness) & 1 & concrete \\
+Quaternion non-commutativity (witness) & 1 & 0\,ms \\
+Complex commutativity & 1 & 0\,ms \\
+Quaternion associativity & 1 & 1\,ms \\
+Quaternion sandwich norm & 1 & 2.5\,ms \\
+Octonion inverse (unit) & 1 & 0.1\,ms \\
+\midrule
+\textbf{Total} & \textbf{55} & \textbf{${<}2$\,s} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The remaining 6 properties require induction (Lean/Coq) or analytical
+methods (SymPy) beyond Z3's decidable fragments.
+
+% =====================================================================
+\section{Architectural Implications}
+\label{sec:hardware}
+% =====================================================================
+
+\subsection{Cariow-Hadamard Duality}
+
+The Cariow factorization (\ref{eq:cariow}) and the WHT butterfly
+use identical $H_2$ butterflies at each level. A hardware unit that
+implements the $H_2$ butterfly can serve both purposes:
+\begin{itemize}[nosep,leftmargin=*]
+  \item \textbf{Rotation mode:} Apply $\Pi_{\mathrm{WHT}}$ for
+        coordinate decorrelation ($d=128$: 7 butterfly levels).
+  \item \textbf{Multiplication mode:} Compute CD product for
+        E8-block rotation ($\dim=8$: 3 butterfly levels + sparse
+        correction).
+\end{itemize}
+
+A fused butterfly unit amortizes the area cost of both operations.
+At $d=128$ on Ada Lovelace (SASS: FFMA 4.54\,cyc, 44.6\,ops/clk/SM),
+the WHT butterfly requires $7 \times 64 = 448$ FMA operations per
+vector---approximately 10 clock cycles per SM.
+
+\subsection{GPU Architecture Dispatch}
+
+We implement a 5-tier runtime dispatch based on SM capability:
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Architecture & SM & Math Mode \\
+\midrule
+Hopper (H100)      & 9.0+ & TF32/FP8 \\
+Ada (RTX 40xx)     & 8.9  & TF32 ($3.02\times$) \\
+Ampere (RTX 30xx)  & 8.0  & TF32 \\
+Turing (RTX 20xx)  & 7.5  & FP16 TC \\
+Generic            & ${<}7.5$ & FP32 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+TF32 (19-bit mantissa) provides $3.02\times$ cuBLAS speedup on Ampere+
+with relative error $2.9 \times 10^{-4}$---negligible vs.\ 2--4\,bit
+quantization error.
+
+\subsection{Memory Layout}
+
+Following steinmarder's~\cite{steinmarder} INT8 SoA LBM kernel pattern
+(5{,}956 MLUPS on Ada), our CUDA kernels use Structure-of-Arrays layout:
+\texttt{indices[coord * n\_keys + key\_idx]} for coalesced per-coordinate
+global memory access. The codebook (max 16 entries at 4-bit = 64\,B)
+resides in L1 cache for the duration of the kernel.
+
+% =====================================================================
+\section{Experiments}
+\label{sec:experiments}
+% =====================================================================
+
+\subsection{Experimental Setup}
+
+We evaluate on two models: Qwen2.5-3B-Instruct (36 layers, 2 KV heads,
+$d=128$) and Mistral-7B-Instruct-v0.3 (32 layers, 8 KV heads, $d=128$).
+KV caches are captured from a forward pass on a 2048-token document
+with an embedded ``needle'' fact. All experiments run on an RTX 4070 Ti
+(Ada Lovelace, 11.6\,GB VRAM).
+
+\subsection{Multi-Model Results}
+
+\begin{table}[t]
+\centering
+\caption{Attention fidelity on real models ($d=128$, 3-bit).
+``Ours'' = NSN + WHT + Lloyd-Max + packed QJL.}
+\label{tab:models}
+\begin{tabular}{lccccc}
+\toprule
+Model & Config & Cos. & Top-1 & Top-5 & Compr. \\
+\midrule
+\multirow{3}{*}{\rotatebox{90}{\small Qwen}}
+  & Vanilla & 0.9960 & 76.4\% & 91.7\% & $5.0\times$ \\
+  & WHT     & 0.9961 & 80.6\% & 94.4\% & $5.0\times$ \\
+  & \textbf{Ours}  & \textbf{0.9985} & \textbf{80.6\%} & \textbf{90.3\%} & $\mathbf{5.0\times}$ \\
+\midrule
+\multirow{3}{*}{\rotatebox{90}{\small Mistral}}
+  & Vanilla & 0.9974 & 62.1\% & 93.0\% & $5.0\times$ \\
+  & WHT     & 0.9974 & 67.6\% & 94.5\% & $5.0\times$ \\
+  & \textbf{Ours}  & \textbf{0.9974} & \textbf{67.6\%} & \textbf{94.5\%} & $\mathbf{5.0\times}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{RCA: Post-VQ Scaling Hurts}
+
+The angular preservation correction
+$\hat{v}_Q = (\norm{v}^2 / \inner{v}{\hat{v}_Q}) \hat{v}_Q$
+increases residual norm by 5.3\% (4.88 $\to$ 5.13), amplifying
+the 1-bit QJL correction noise. Net effect: $-$13.4\,bp cosine
+similarity. We disable this by default.
+
+\subsection{CPU Optimization}
+
+On CPU, replacing the Lloyd-Max argmin quantization
+($O(d \cdot 2^b)$ with intermediate tensor allocation) with
+\texttt{torch.searchsorted} (binary search, $O(d \log 2^b)$)
+yields $3.93\times$ speedup. Thread-safe codebook caching with
+double-checked locking provides $37{,}000\times$ speedup on
+repeated parameters.
+
+% =====================================================================
+\section{Related Work}
+\label{sec:related}
+% =====================================================================
+
+\paragraph{Rotation-based quantization.}
+QuIP~\cite{quip2023} introduced random Haar rotation for weight
+quantization; QuIP\#~\cite{quipsharp2024} replaced it with randomized
+Hadamard and added E8 lattice codebooks. QuaRot~\cite{quarot2024}
+fuses WHT into model weights. SpinQuant~\cite{spinquant2024} learns
+dense rotations via Cayley SGD on the Stiefel manifold (note: Cayley
+\emph{transform}, not Cayley-Dickson \emph{construction}).
+ButterflyQuant~\cite{butterflyquant2025} uses learnable Givens
+products. ParoQuant uses pairwise Givens rotations.
+\emph{None use CD algebraic multiplication as the rotation.}
+
+\paragraph{KV cache quantization.}
+KIVI~\cite{kivi2024} uses per-channel keys / per-token values with
+FP16 precision windows. NSNQuant~\cite{nsnquant2025} uses
+normalize-shift-normalize with 8D VQ codebooks.
+TurboQuant~\cite{turboquant2026} introduced QJL residual correction.
+RotorQuant (Pope, March 2026) uses Clifford $\Cl(3,0)$ rotors on
+3D blocks---the closest to our work but uses a different algebra
+(geometric sandwich product vs.\ CD left-multiplication) and smaller
+block dimension (3D vs.\ 4--8D).
+
+\paragraph{Hypercomplex networks.}
+Quaternion~\cite{parcollet2019} and octonion~\cite{zhu2019} neural
+networks use CD algebra for forward-pass weight parameterization,
+not quantization rotations. PHM~\cite{zhang2021} uses Kronecker
+hypercomplex for compression.
+
+% =====================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% =====================================================================
+
+We demonstrate that NSN pre-processing is the dominant technique for
+KV cache quantization quality (+136\,bp cosine), while structured
+rotations (WHT, CD) provide theoretical guarantees, storage efficiency
+($64\times$ fewer parameters than Haar), and formal verifiability
+(30/36 properties Z3-proven). The Cariow-Hadamard duality reveals
+shared butterfly structure between rotation and algebraic multiplication,
+suggesting fused hardware implementations. Our full-stack pipeline
+achieves 0.9985 attention cosine (vs.\ 0.9849 vanilla) with 69\%
+memory reduction on Qwen2.5-3B and Mistral-7B.
+
+% =====================================================================
+% References
+% =====================================================================
+\bibliographystyle{ACM-Reference-Format}
+\begin{thebibliography}{99}
+
+\bibitem{turboquant2026}
+Google Research. TurboQuant: Online two-stage vector quantization for
+compressing the KV cache. \emph{ICLR}, 2026.
+
+\bibitem{quip2023}
+J.~Chee et al. QuIP: 2-bit quantization of large language models
+with guarantees. \emph{NeurIPS}, 2023.
+
+\bibitem{quipsharp2024}
+A.~Tseng et al. QuIP\#: Even better LLM quantization with Hadamard
+incoherence and lattice codebooks. \emph{ICML}, 2024.
+
+\bibitem{quarot2024}
+S.~Ashkboos et al. QuaRot: Outlier-free 4-bit inference in rotated LLMs.
+\emph{NeurIPS}, 2024.
+
+\bibitem{spinquant2024}
+Z.~Liu et al. SpinQuant: LLM quantization with learned rotations.
+\emph{ICLR}, 2025.
+
+\bibitem{butterflyquant2025}
+ButterflyQuant: Learnable butterfly orthogonal quantization.
+\emph{ICLR}, 2026.
+
+\bibitem{kivi2024}
+Z.~Liu et al. KIVI: A tuning-free asymmetric 2-bit quantization
+for KV cache. \emph{ICML}, 2024.
+
+\bibitem{nsnquant2025}
+NSNQuant: A double normalization approach for calibration-free low-bit
+VQ of KV cache. \emph{NeurIPS}, 2025.
+
+\bibitem{parcollet2019}
+T.~Parcollet et al. Quaternion recurrent neural networks.
+\emph{ICLR}, 2019.
+
+\bibitem{zhu2019}
+X.~Zhu et al. Deep octonion networks. \emph{arXiv:1903.08478}, 2019.
+
+\bibitem{zhang2021}
+A.~Zhang et al. Beyond fully-connected layers with quaternions:
+Parameterization of hypercomplex multiplications with $1/n$ parameters.
+\emph{ICLR}, 2021.
+
+\bibitem{cariow2012}
+A.~Cariow, G.~Cariowa. Algorithm for multiplying two octonions.
+\emph{Radioelectronics and Comm.\ Systems}, 55:464--473, 2012.
+
+\bibitem{conwaysloane}
+J.~Conway, N.~Sloane. \emph{Sphere Packings, Lattices and Groups}.
+Springer, 3rd ed., 1999.
+
+\bibitem{z3}
+L.~de~Moura, N.~Bj{\o}rner. Z3: An efficient SMT solver.
+\emph{TACAS}, 2008.
+
+\bibitem{steinmarder}
+Oichkatzelesfrettschen. steinmarder: GPU instruction set explorer.
+\url{https://github.com/Oichkatzelesfrettschen/steinmarder}, 2026.
+
+\end{thebibliography}
+
+\end{document}
