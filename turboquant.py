@@ -94,6 +94,13 @@ def _make_quantizer(
     if quantizer is None or quantizer == "scalar":
         return ScalarLloydMaxQuantizer(d, bits, device=device)
     if quantizer == "e8":
+        import warnings
+        if bits > 1:
+            warnings.warn(
+                f"E8 lattice quantizer is a fixed ~1 bit/dim codebook. "
+                f"bits={bits} parameter is ignored. Use 'scalar' for multi-bit.",
+                stacklevel=3,
+            )
         from .lattice_vq import E8LatticeQuantizer
         return E8LatticeQuantizer(d, device=device)
     if isinstance(quantizer, str) and quantizer.startswith("z8"):

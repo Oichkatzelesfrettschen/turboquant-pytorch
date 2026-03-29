@@ -71,6 +71,12 @@ class HybridWHTCDRotation(Rotation):
 
     Storage: 2*d (WHT signs) + d (CD unit elements) = 3*d total.
     Cost: O(d^2) cuBLAS GEMM + O(d) CD multiply = dominated by GEMM.
+
+    CAVEAT (ablation-validated): when NSN pre-processing is active (recommended),
+    the CD block refinement adds overhead without improving quality. WHT alone
+    achieves cos=0.9468 vs Hybrid cos=0.9408 on post-NSN data. The recommended
+    production config uses WHT only (rotation="wht" in TurboQuantConfig).
+    Use HybridWHTCDRotation only when NSN is disabled.
     """
 
     def __init__(self, d: int, block_dim: int = 8, seed: int = 42, device: str = "cpu"):

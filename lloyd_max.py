@@ -12,12 +12,14 @@ We solve the Lloyd-Max conditions (continuous 1-D k-means) to find optimal centr
 
 import torch
 import math
+import threading
 from functools import lru_cache
 from scipy import integrate, special
 
-# Cache solved codebooks to avoid recomputation for repeated (d, bits) pairs.
-# Typical usage creates many TurboQuantMSE instances with the same (d, bits).
+# Thread-safe cache for solved codebooks. Concurrent DataLoader workers
+# may construct LloydMaxCodebook instances simultaneously.
 _codebook_cache = {}
+_codebook_lock = threading.Lock()
 
 
 def beta_pdf(x: float, d: int) -> float:
@@ -124,14 +126,18 @@ class LloydMaxCodebook:
         self.n_levels = 2 ** bits
 
         cache_key = (d, bits, use_exact)
-        if cache_key in _codebook_cache:
-            self.centroids, self.boundaries, self.distortion = _codebook_cache[cache_key]
-        else:
-            self.centroids, self.boundaries = solve_lloyd_max(d, bits, use_exact)
-            self.distortion = compute_expected_distortion(
-                d, bits, self.centroids, self.boundaries, use_exact
-            )
-            _codebook_cache[cache_key] = (self.centroids, self.boundaries, self.distortion)
+        with _codebook_lock:
+            if cache_key in _codebook_cache:
+                self.centroids, self.boundaries, self.distortion = _codebook_cache[cache_key]
+                return
+        # Solve outside lock (expensive, don't hold lock during computation)
+        centroids, boundaries = solve_lloyd_max(d, bits, use_exact)
+        distortion = compute_expected_distortion(d, bits, centroids, boundaries, use_exact)
+        self.centroids = centroids
+        self.boundaries = boundaries
+        self.distortion = distortion
+        with _codebook_lock:
+            _codebook_cache[cache_key] = (centroids, boundaries, distortion)
 
     def quantize(self, x: torch.Tensor) -> torch.Tensor:
         """Quantize values to nearest centroid indices."""

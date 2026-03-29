@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "turboquant"
+version = "0.2.0"
+description = "Structured rotations and lattice quantization for KV cache compression via Cayley-Dickson algebra"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Oichkatzelesfrettschen"},
+]
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0.0",
+    "scipy>=1.10.0",
+]
+
+[project.optional-dependencies]
+models = [
+    "transformers>=4.40.0",
+    "accelerate>=0.25.0",
+    "bitsandbytes>=0.43.0",
+]
+test = [
+    "pytest>=7.0",
+    "hypothesis>=6.0",
+]
+verify = [
+    "z3-solver>=4.12",
+]
+all = [
+    "turboquant[models,test,verify]",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["turboquant*"]
+exclude = ["tests*", "bench*"]
+
+[tool.setuptools]
+py-modules = [
+    "cd_algebra", "cd_fidelity", "cd_rotation", "clifford_rotor",
+    "compressors", "config", "cpu_dispatch", "gpu_dispatch",
+    "e8_quantizer", "e8_rotation", "hierarchical", "hybrid_pipeline",
+    "kmeans_vq", "lattice_codebook", "lattice_vq", "lloyd_max",
+    "nsn_preprocess", "rotations", "sign_pack", "spectral",
+    "tensor_decomposition", "triton_kernels", "turboquant",
+    "adaptive", "algebra_foundations", "cariow", "cuda_ops", "zd_bias",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+filterwarnings = [
+    "error",
+    "ignore::FutureWarning",
+    "ignore::DeprecationWarning:bitsandbytes",
+]

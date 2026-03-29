@@ -135,13 +135,26 @@ class TurboQuantCompressorV2:
         else:
             sign_data = {"unpacked": signs.reshape(B, H, S, D)}
 
-        return {
+        result = {
             "k_mse": k_mse.to(torch.float16).reshape(B, H, S, D),
             "sign_data": sign_data,
             "residual_norm": residual_norm.to(torch.float16).reshape(B, H, S),
             "nsn_state": nsn_state,
             "shape": (B, H, S, D),
         }
+        # Backward compat: callers using the old API key "qjl_signs"
+        # get the unpacked signs transparently
+        if use_sign_pack and "packed" in sign_data:
+            from .sign_pack import unpack_signs as _unpack
+            _d = sign_data["d"]
+            _packed = sign_data["packed"]
+            _B, _H, _S = _packed.shape[:3]
+            result["qjl_signs"] = _unpack(
+                _packed.reshape(-1, _packed.shape[-1]), _d
+            ).reshape(_B, _H, _S, _d)
+        elif "unpacked" in sign_data:
+            result["qjl_signs"] = sign_data["unpacked"]
+        return result
 
     @torch.no_grad()
     def asymmetric_attention_scores(self, queries: torch.Tensor, compressed: dict) -> torch.Tensor:

@@ -10,13 +10,25 @@ Metrics:
     - Inner product accuracy after full TurboQuant pipeline
 """
 
+import importlib.util
+import os
+import sys
 import time
+
+# Bootstrap package if running as script
+if "turboquant" not in sys.modules:
+    _d = os.path.dirname(os.path.abspath(__file__))
+    _s = importlib.util.spec_from_file_location("turboquant", os.path.join(_d, "__init__.py"), submodule_search_locations=[_d])
+    _m = importlib.util.module_from_spec(_s)
+    sys.modules["turboquant"] = _m
+    _s.loader.exec_module(_m)
+
 import torch
 from typing import Dict, List
 
-from .rotations import HaarRotation
-from .lattice_vq import ScalarLloydMaxQuantizer, E8LatticeQuantizer, Z8PrefixCutQuantizer
-from .lloyd_max import LloydMaxCodebook
+from turboquant.rotations import HaarRotation
+from turboquant.lattice_vq import ScalarLloydMaxQuantizer, E8LatticeQuantizer, Z8PrefixCutQuantizer
+from turboquant.lloyd_max import LloydMaxCodebook
 
 
 def _time_quantize(quantizer, x: torch.Tensor, n_iters: int = 50) -> float:

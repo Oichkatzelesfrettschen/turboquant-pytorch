@@ -13,16 +13,28 @@ Metrics:
     - Associator norm for CD rotations (measures non-associativity distortion)
 """
 
+import importlib.util
+import os
+import sys
 import time
+
+# Bootstrap package if running as script
+if "turboquant" not in sys.modules:
+    _d = os.path.dirname(os.path.abspath(__file__))
+    _s = importlib.util.spec_from_file_location("turboquant", os.path.join(_d, "__init__.py"), submodule_search_locations=[_d])
+    _m = importlib.util.module_from_spec(_s)
+    sys.modules["turboquant"] = _m
+    _s.loader.exec_module(_m)
+
 import torch
 from typing import Dict, List
 
-from .rotations import (
+from turboquant.rotations import (
     Rotation, HaarRotation, WHTRotation, CDRotation,
     CDMultiLayerRotation, PCARotation, KacRotation,
 )
-from .spectral import distribution_analysis, rotation_quality_score
-from .lloyd_max import LloydMaxCodebook
+from turboquant.spectral import distribution_analysis, rotation_quality_score
+from turboquant.lloyd_max import LloydMaxCodebook
 
 
 def _time_rotation(rotation: Rotation, x: torch.Tensor, n_iters: int = 100) -> float:

@@ -50,13 +50,6 @@ def _load_package(name, pkg_dir):
 def _load_vanilla():
     """Load vanilla TurboQuant modules directly (no package structure)."""
     mods = {}
-    for name in ["lloyd_max", "turboquant"]:
-        fpath = os.path.join(VANILLA_DIR, f"{name}.py")
-        spec = importlib.util.spec_from_file_location(f"vanilla_{name}", fpath)
-        mod = importlib.util.module_from_spec(spec)
-        # Vanilla turboquant.py uses `from .lloyd_max import ...` which fails
-        # outside a package. We need to hack the import.
-        sys.modules[f"vanilla_{name}"] = mod
     # Load lloyd_max first (no dependencies)
     lm_spec = importlib.util.spec_from_file_location(
         "lloyd_max", os.path.join(VANILLA_DIR, "lloyd_max.py"),
@@ -65,15 +58,17 @@ def _load_vanilla():
     sys.modules["lloyd_max"] = lm_mod
     lm_spec.loader.exec_module(lm_mod)
 
-    # Patch turboquant.py to use absolute imports
-    tq_path = os.path.join(VANILLA_DIR, "turboquant.py")
-    with open(tq_path, "r") as f:
-        src = f.read()
-    src_patched = src.replace("from .lloyd_max", "from lloyd_max")
-    code = compile(src_patched, tq_path, "exec")
-    tq_mod = type(sys)("vanilla_turboquant")
-    tq_mod.__file__ = tq_path
-    exec(code, tq_mod.__dict__)
+    # Load vanilla turboquant.py as a package with lloyd_max available
+    # The vanilla __init__.py uses relative imports, so we load via spec
+    # with submodule_search_locations to make relative imports work.
+    tq_spec = importlib.util.spec_from_file_location(
+        "vanilla_turboquant",
+        os.path.join(VANILLA_DIR, "__init__.py"),
+        submodule_search_locations=[VANILLA_DIR],
+    )
+    tq_mod = importlib.util.module_from_spec(tq_spec)
+    sys.modules["vanilla_turboquant"] = tq_mod
+    tq_spec.loader.exec_module(tq_mod)
     return lm_mod, tq_mod
 
 
