@@ -79,5 +79,9 @@ from .algebra_foundations import (
 # cuBLAS-accelerated WHT rotation + Triton quantization kernels
 from .triton_kernels import CuBLASWHTRotation
 
+# CPU/GPU dispatch with architecture detection
+from .gpu_dispatch import detect_gpu, apply_gpu_optimizations, GPUProfile, KernelTier
+from .cpu_dispatch import detect_cpu, CPUProfile, CPUQuantizeDispatch
+
 # Smart configuration presets
 from .config import TurboQuantConfig, KVCacheConfig
