@@ -172,7 +172,7 @@ class AdaptiveBitAllocator:
     def summary(
         self,
         configs: Dict[Tuple[int, int], QuantConfig],
-    ) -> Dict[str, float]:
+    ) -> dict:
         """Compute summary statistics for an allocation."""
         if not configs:
             return {}

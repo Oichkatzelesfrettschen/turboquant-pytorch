@@ -209,7 +209,7 @@ class CDMultiLayerRotation(Rotation):
     def __init__(
         self,
         d: int,
-        block_dims: list = None,
+        block_dims: Optional[list] = None,
         seed: Optional[int] = None,
         device: str = "cpu",
     ):

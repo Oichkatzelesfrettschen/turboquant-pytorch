@@ -406,8 +406,8 @@ class TurboQuantKVCache:
         )
 
         # Storage
-        self.key_cache = []    # list of compressed key dicts
-        self.value_cache = []  # list of quantization state dicts
+        self.key_cache: list[dict] = []    # list of compressed key dicts
+        self.value_cache: list[dict] = []  # list of quantization state dicts
 
     def append(self, keys: torch.Tensor, values: torch.Tensor):
         """

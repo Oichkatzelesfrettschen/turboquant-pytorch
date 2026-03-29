@@ -422,7 +422,7 @@ def cd_right_mult_matrix(a: Tensor) -> Tensor:
 def cd_random_unit(
     *batch_shape: int,
     dim: int,
-    seed: int = None,
+    seed: int | None = None,
     device: str = "cpu",
     dtype: torch.dtype = torch.float32,
 ) -> Tensor:

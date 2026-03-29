@@ -17,7 +17,7 @@ from scipy import integrate
 
 # Thread-safe cache for solved codebooks. Concurrent DataLoader workers
 # may construct LloydMaxCodebook instances simultaneously.
-_codebook_cache = {}
+_codebook_cache: dict[tuple, tuple] = {}
 _codebook_lock = threading.Lock()
 
 

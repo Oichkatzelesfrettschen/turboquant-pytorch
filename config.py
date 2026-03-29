@@ -44,9 +44,14 @@ class TurboQuantConfig:
     max_level_bits: int = 5
 
     @staticmethod
-    def recommended(d: int = 128, bits: int = 3) -> "TurboQuantConfig":
+    def recommended(d: int = 128, bits: int = 4) -> "TurboQuantConfig":
         """
         Best quality at reasonable speed (validated by ablation study).
+
+        Default bits=4 (was 3) because int8 index storage makes 3-bit
+        and 4-bit cost identical memory. 4-bit gives +2.8pp avg cosine
+        on Qwen2.5-3B (0.961 -> 0.989) at zero extra storage cost.
+        This is the "free bits" finding from profiling RCA.
 
         Ablation on Qwen2.5-3B proved:
             WHT + NSN + sign packing = cos 0.9985, top1 80.6%, 2.8 MB

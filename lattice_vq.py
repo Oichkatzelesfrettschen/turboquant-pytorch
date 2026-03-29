@@ -128,6 +128,7 @@ class E8LatticeQuantizer(VectorQuantizer):
         if self._scale is None:
             self._scale = e8_auto_scale(blocks, method=self._scale_method)
 
+        assert self._scale is not None
         # Quantize each block to nearest E8 point
         scaled = blocks / (self._scale + 1e-8)
         lattice_points = e8_closest_point(scaled)
@@ -197,6 +198,7 @@ class Z8PrefixCutQuantizer(VectorQuantizer):
             cb_rms = self._codebook.pow(2).mean().sqrt().item()
             self._scale = x_rms / (cb_rms + 1e-8)
 
+        assert self._scale is not None
         scaled = blocks / (self._scale + 1e-8)
         indices = nearest_neighbor(scaled, self._codebook)
 
