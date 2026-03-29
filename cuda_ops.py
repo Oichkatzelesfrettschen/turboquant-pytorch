@@ -47,7 +47,21 @@ def _try_load_cuda():
             verbose=False,
         )
         _cuda_available = True
-    except Exception:
+    except ImportError as e:
+        import warnings
+        warnings.warn(
+            f"CUDA extension build prerequisites missing: {e}. "
+            f"Falling back to pure PyTorch.",
+            RuntimeWarning, stacklevel=2,
+        )
+        _cuda_available = False
+    except RuntimeError as e:
+        import warnings
+        warnings.warn(
+            f"CUDA extension JIT compilation failed: {e}. "
+            f"Falling back to pure PyTorch. Check NVCC and CUDA toolkit.",
+            RuntimeWarning, stacklevel=2,
+        )
         _cuda_available = False
 
     return _cuda_available

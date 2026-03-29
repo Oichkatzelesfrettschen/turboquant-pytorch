@@ -135,10 +135,21 @@ class TurboQuantCompressorV2:
         else:
             sign_data = {"unpacked": signs.reshape(B, H, S, D)}
 
+        # Clamp before float16 cast to prevent inf (float16 max ~ 65504)
+        _fp16_max = 65504.0
+        if k_mse.abs().max() > _fp16_max:
+            import warnings
+            warnings.warn(
+                f"k_mse values exceed float16 range (max={k_mse.abs().max().item():.0f}). "
+                f"Clamping to prevent inf. Consider normalizing inputs.",
+                RuntimeWarning, stacklevel=2,
+            )
+            k_mse = k_mse.clamp(-_fp16_max, _fp16_max)
+
         result = {
             "k_mse": k_mse.to(torch.float16).reshape(B, H, S, D),
             "sign_data": sign_data,
-            "residual_norm": residual_norm.to(torch.float16).reshape(B, H, S),
+            "residual_norm": residual_norm.clamp(0, _fp16_max).to(torch.float16).reshape(B, H, S),
             "nsn_state": nsn_state,
             "shape": (B, H, S, D),
         }

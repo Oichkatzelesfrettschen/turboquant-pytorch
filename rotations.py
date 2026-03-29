@@ -457,5 +457,10 @@ import os as _os
 if _os.environ.get("TURBOQUANT_COMPILE", "0") == "1":
     try:
         _fast_hadamard_impl = torch.compile(_fast_hadamard_impl, mode="reduce-overhead")
-    except Exception:
-        pass
+    except Exception as _e:
+        import warnings
+        warnings.warn(
+            f"TURBOQUANT_COMPILE=1 but torch.compile failed: {_e}. "
+            f"Using uncompiled WHT butterfly.",
+            RuntimeWarning,
+        )

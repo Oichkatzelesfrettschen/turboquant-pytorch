@@ -58,7 +58,7 @@ def nsn_preprocess(x: Tensor) -> Tuple[Tensor, NSNState]:
     """
     # Step 1: Token-wise normalization
     norms_1 = x.norm(dim=-1, keepdim=True)  # (n, 1)
-    x_n = x / (norms_1 + 1e-15)
+    x_n = x / (norms_1 + 1e-8)
 
     # Step 2: Channel-wise centering
     channel_means = x_n.mean(dim=0, keepdim=True)  # (1, d)
@@ -66,7 +66,7 @@ def nsn_preprocess(x: Tensor) -> Tuple[Tensor, NSNState]:
 
     # Step 3: Second token-wise normalization
     norms_2 = x_ns.norm(dim=-1, keepdim=True)  # (n, 1)
-    x_nsn = x_ns / (norms_2 + 1e-15)
+    x_nsn = x_ns / (norms_2 + 1e-8)
 
     state = NSNState(
         norms_1=norms_1.squeeze(-1),
@@ -119,7 +119,7 @@ def adaptive_vq_scale(x_original: Tensor, x_quantized: Tensor) -> Tensor:
     """
     orig_norm_sq = (x_original ** 2).sum(dim=-1, keepdim=True)
     dot = (x_original * x_quantized).sum(dim=-1, keepdim=True)
-    scale = orig_norm_sq / (dot + 1e-15)
+    scale = orig_norm_sq / (dot + 1e-8)
     return x_quantized * scale
 
 
@@ -159,7 +159,7 @@ def kivi_quantize_keys(
     ch_max = keys_flat.max(dim=0).values  # (D,)
     ch_range = ch_max - ch_min
     scales = ch_range / (n_levels - 1)
-    scales = scales.clamp(min=1e-15)
+    scales = scales.clamp(min=1e-8)
 
     # Quantize
     indices = ((keys_flat - ch_min.unsqueeze(0)) / scales.unsqueeze(0)).round()
@@ -211,7 +211,7 @@ def kivi_quantize_values(
     tok_max = values.max(dim=-1).values
     tok_range = tok_max - tok_min
     scales = tok_range / (n_levels - 1)
-    scales = scales.clamp(min=1e-15)
+    scales = scales.clamp(min=1e-8)
 
     # Quantize
     indices = ((values - tok_min.unsqueeze(-1)) / scales.unsqueeze(-1)).round()
@@ -288,15 +288,15 @@ def compute_group_params(
         g_range = g_max - g_min
         center = (g_min + g_max) / 2.0
 
-        is_sym = abs(center) < symmetry_threshold * max(g_range, 1e-15)
+        is_sym = abs(center) < symmetry_threshold * max(g_range, 1e-8)
 
         if is_sym:
             abs_max = max(abs(g_min), abs(g_max))
-            scales[g] = max(2.0 * abs_max / (n_levels - 1), 1e-15)
+            scales[g] = max(2.0 * abs_max / (n_levels - 1), 1e-8)
             zero_points[g] = 0.0
             symmetric[g] = True
         else:
-            scales[g] = max(g_range / (n_levels - 1), 1e-15)
+            scales[g] = max(g_range / (n_levels - 1), 1e-8)
             zero_points[g] = g_min
             symmetric[g] = False
 

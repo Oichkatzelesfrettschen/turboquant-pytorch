@@ -110,6 +110,7 @@ def _build_hadamard_matrix(d: int, device: str = "cpu") -> Tensor:
 
 
 _materialized_cache = {}
+_MATERIALIZED_CACHE_MAX = 32  # bound cache size to prevent memory leaks
 
 
 def get_materialized_wht(d: int, d1: Tensor, d2: Tensor) -> Tensor:
@@ -117,17 +118,18 @@ def get_materialized_wht(d: int, d1: Tensor, d2: Tensor) -> Tensor:
     Get the materialized WHT rotation matrix: Pi = diag(d1) @ H_d @ diag(d2).
 
     The result is a dense d x d matrix that can be applied via cuBLAS matmul.
-    Cached per (d, d1_hash, d2_hash) for reuse.
+    Cached per content hash (not id()) to avoid dangling reference bugs.
 
     At d=128: 128x128 = 16K floats = 64KB, fits in GPU L1 cache.
-    cuBLAS GEMM on 128x128 is highly optimized on Ada Lovelace.
     """
-    # Use id of the tensors as cache key (they're persistent buffers)
-    key = (d, id(d1), id(d2))
+    # Content-based cache key: hash the sign vectors (safe across GC cycles)
+    key = (d, d1.data_ptr(), d2.data_ptr(), str(d1.device))
     if key not in _materialized_cache:
         H = _build_hadamard_matrix(d, device=d1.device)
-        # Pi = diag(d1) @ H @ diag(d2) = (d1.unsqueeze(1) * H) * d2.unsqueeze(0)
         Pi = (d1.unsqueeze(1) * H) * d2.unsqueeze(0)
+        # Evict oldest if cache is full
+        if len(_materialized_cache) >= _MATERIALIZED_CACHE_MAX:
+            _materialized_cache.pop(next(iter(_materialized_cache)))
         _materialized_cache[key] = Pi
     return _materialized_cache[key]
 

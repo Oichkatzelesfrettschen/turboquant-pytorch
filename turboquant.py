@@ -47,11 +47,22 @@ def _make_rotation(
             try:
                 from .triton_kernels import CuBLASWHTRotation
                 return CuBLASWHTRotation(d, seed=seed, device=device)
-            except Exception:
-                pass
+            except ImportError:
+                import warnings
+                warnings.warn(
+                    "CuBLASWHTRotation unavailable (triton_kernels import failed). "
+                    "Using CPU-path WHT rotation on GPU (slower).",
+                    RuntimeWarning, stacklevel=3,
+                )
         return WHTRotation(d, seed=seed, device=device)
-    if isinstance(rotation, str) and rotation.startswith("cd"):
-        block_dim = int(rotation[2:])
+    if isinstance(rotation, str) and rotation.startswith("cd") and rotation != "clifford":
+        suffix = rotation[2:]
+        if not suffix.isdigit() or int(suffix) == 0:
+            raise ValueError(
+                f"Invalid CD rotation spec: {rotation!r}. "
+                f"Use 'cd4', 'cd8', 'cd16', etc. (power of 2, > 0)."
+            )
+        block_dim = int(suffix)
         return CDRotation(d, block_dim=block_dim, seed=seed, device=device)
     if rotation == "hybrid":
         from .hybrid_pipeline import HybridWHTCDRotation
