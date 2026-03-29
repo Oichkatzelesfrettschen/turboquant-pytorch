@@ -73,8 +73,9 @@ class ScalarLloydMaxQuantizer(VectorQuantizer):
         self.device = device
 
     def quantize(self, x: Tensor) -> dict:
-        diffs = x.unsqueeze(-1) - self.centroids  # (..., d, n_levels)
-        indices = diffs.abs().argmin(dim=-1)  # (..., d)
+        # Argmin over centroid distances -- well-optimized in PyTorch
+        diffs = x.unsqueeze(-1) - self.centroids
+        indices = diffs.abs().argmin(dim=-1)
         return {"indices": indices, "type": "scalar_lloyd_max"}
 
     def dequantize(self, state: dict) -> Tensor:
