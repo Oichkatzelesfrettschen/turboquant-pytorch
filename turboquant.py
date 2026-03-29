@@ -42,6 +42,13 @@ def _make_rotation(
     if rotation is None or rotation == "haar":
         return HaarRotation(d, seed=seed, device=device)
     if rotation == "wht":
+        # Use materialized cuBLAS path on GPU for full throughput
+        if device != "cpu" and "cuda" in str(device):
+            try:
+                from .triton_kernels import CuBLASWHTRotation
+                return CuBLASWHTRotation(d, seed=seed, device=device)
+            except Exception:
+                pass
         return WHTRotation(d, seed=seed, device=device)
     if isinstance(rotation, str) and rotation.startswith("cd"):
         block_dim = int(rotation[2:])

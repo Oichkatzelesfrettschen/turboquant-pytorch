@@ -76,5 +76,8 @@ from .algebra_foundations import (
     barnes_wall_connection, enumerate_methods,
 )
 
+# cuBLAS-accelerated WHT rotation + Triton quantization kernels
+from .triton_kernels import CuBLASWHTRotation
+
 # Smart configuration presets
 from .config import TurboQuantConfig, KVCacheConfig
