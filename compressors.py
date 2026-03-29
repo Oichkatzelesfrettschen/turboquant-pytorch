@@ -94,21 +94,22 @@ class TurboQuantCompressorV2:
         B, H, S, D = states.shape
         flat = states.reshape(-1, D).float()
 
-        # Store original norms
-        vec_norms = torch.norm(flat, dim=-1, keepdim=True)  # (N, 1)
-        flat_norm = flat / (vec_norms + 1e-8)
+        # Fused normalize: single pass over data (vs separate norm + div)
+        flat_norm = F.normalize(flat, dim=-1)
+        vec_norms = flat.norm(dim=-1, keepdim=True)
 
-        # NSN pre-processing: normalize -> channel-center -> re-normalize
-        # Ablation-validated: +136bp cosine, +25% top-1 on Qwen2.5-3B
+        # NSN pre-processing: channel-center + re-normalize
+        # flat_norm is already unit-norm, so NSN step 1 is identity.
+        # We call nsn_preprocess which handles this correctly.
         nsn_state = None
         if use_nsn:
             from .nsn_preprocess import nsn_preprocess, NSNState
-            flat_norm, nsn_state = nsn_preprocess(flat_norm)
+            flat_norm, nsn_state = nsn_preprocess(flat_norm, already_normalized=True)
 
         # Rotate
         rotated = self._rotation.rotate(flat_norm)
 
-        # Quantize
+        # Quantize + dequantize
         quant_state = self._quantizer.quantize(rotated)
         reconstructed_rotated = self._quantizer.dequantize(quant_state)
 
@@ -119,46 +120,101 @@ class TurboQuantCompressorV2:
             recon_flat = nsn_restore(recon_flat, nsn_state)
         k_mse = recon_flat * vec_norms
 
-        # Residual in original space
+        # Residual + QJL: fuse norm and projection to avoid materializing
+        # the residual twice. residual_norm uses a single linalg.norm pass.
         residual = flat - k_mse
-        residual_norm = torch.norm(residual, dim=-1)  # (N,)
+        residual_norm = residual.norm(dim=-1)
 
-        # QJL signs of residual
+        # QJL signs: project and pack directly from bool to avoid int8 intermediate
         projected = residual @ self.S.T
-        signs = (projected >= 0).to(torch.int8) * 2 - 1  # {-1, +1} as int8
-
-        # Sign packing: 8x memory reduction (ablation-validated: zero quality loss)
         if use_sign_pack:
-            from .sign_pack import pack_signs
-            packed_signs = pack_signs(signs)
-            sign_data = {"packed": packed_signs.reshape(B, H, S, -1), "d": D}
+            from .sign_pack import pack_signs_from_projection
+            sign_data = {
+                "packed": pack_signs_from_projection(projected).reshape(B, H, S, -1),
+                "d": D,
+            }
         else:
+            signs = (projected >= 0).to(torch.int8) * 2 - 1
             sign_data = {"unpacked": signs.reshape(B, H, S, D)}
 
-        # Clamp before float16 cast to prevent inf (float16 max ~ 65504)
+        # Float16 clamping: check only once, avoiding redundant abs().max() scan
         _fp16_max = 65504.0
-        if k_mse.abs().max() > _fp16_max:
+        k_mse_fp16 = k_mse.to(torch.float16)
+        if torch.isinf(k_mse_fp16).any():
             import warnings
             warnings.warn(
-                f"k_mse values exceed float16 range (max={k_mse.abs().max().item():.0f}). "
+                f"k_mse values exceed float16 range. "
                 f"Clamping to prevent inf. Consider normalizing inputs.",
                 RuntimeWarning, stacklevel=2,
             )
             k_mse = k_mse.clamp(-_fp16_max, _fp16_max)
+            k_mse_fp16 = k_mse.to(torch.float16)
 
         result = {
-            "k_mse": k_mse.to(torch.float16).reshape(B, H, S, D),
+            "k_mse": k_mse_fp16.reshape(B, H, S, D),
             "sign_data": sign_data,
             "residual_norm": residual_norm.clamp(0, _fp16_max).to(torch.float16).reshape(B, H, S),
             "nsn_state": nsn_state,
+            "quant_state": quant_state,
+            "vec_norms": vec_norms.squeeze(-1).to(torch.float16).reshape(B, H, S),
             "shape": (B, H, S, D),
         }
-        # Backward compat: "qjl_signs" key available but NOT eagerly unpacked.
-        # Callers should use sign_data directly. The qjl_signs key is populated
-        # only when sign_pack is disabled (to avoid negating the memory savings).
         if not use_sign_pack and "unpacked" in sign_data:
             result["qjl_signs"] = sign_data["unpacked"]
         return result
+
+    def reconstruct_k_mse(self, compressed: dict) -> torch.Tensor:
+        """
+        Reconstruct k_mse from compact storage (quant indices + NSN state + norms).
+
+        Call this instead of accessing compressed["k_mse"] when using compact
+        storage mode to save VRAM. The k_mse tensor can be deleted from the
+        compressed dict after initial compression to free memory:
+
+            compressed = compressor.compress(states)
+            del compressed["k_mse"]  # free fp16 copy
+            # Later, during attention:
+            k_mse = compressor.reconstruct_k_mse(compressed)
+        """
+        B, H, S, D = compressed["shape"]
+        quant_state = compressed["quant_state"]
+        nsn_state = compressed.get("nsn_state")
+        vec_norms = compressed["vec_norms"].float().reshape(-1, 1)
+
+        reconstructed_rotated = self._quantizer.dequantize(quant_state)
+        recon_flat = self._rotation.unrotate(reconstructed_rotated)
+        if nsn_state is not None:
+            from .nsn_preprocess import nsn_restore
+            recon_flat = nsn_restore(recon_flat, nsn_state)
+        k_mse = recon_flat * vec_norms
+        return k_mse.to(torch.float16).reshape(B, H, S, D)
+
+    def compact_storage_bytes(self, compressed: dict) -> int:
+        """
+        Calculate actual storage bytes for the compact representation
+        (without the eagerly-reconstructed k_mse).
+        """
+        total = 0
+        # Quantized indices (int8)
+        qs = compressed.get("quant_state", {})
+        if "indices" in qs:
+            total += qs["indices"].numel() * qs["indices"].element_size()
+        # Signs (packed int64)
+        sd = compressed.get("sign_data", {})
+        if "packed" in sd:
+            total += sd["packed"].numel() * sd["packed"].element_size()
+        elif "unpacked" in sd:
+            total += sd["unpacked"].numel() * sd["unpacked"].element_size()
+        # Residual norms (fp16)
+        total += compressed["residual_norm"].numel() * 2
+        # Vec norms (fp16)
+        total += compressed["vec_norms"].numel() * 2
+        # NSN state (channel_means: fp32 * D, norms_2: fp32 * N)
+        ns = compressed.get("nsn_state")
+        if ns is not None:
+            total += ns.channel_means.numel() * 4
+            total += ns.norms_2.numel() * 4
+        return total
 
     @torch.no_grad()
     def asymmetric_attention_scores(self, queries: torch.Tensor, compressed: dict) -> torch.Tensor:
@@ -175,7 +231,10 @@ class TurboQuantCompressorV2:
         Returns:
             scores: (batch, heads, seq_q, seq_k)
         """
-        k_mse = compressed["k_mse"].float()
+        if "k_mse" in compressed:
+            k_mse = compressed["k_mse"].float()
+        else:
+            k_mse = self.reconstruct_k_mse(compressed).float()
         r_norm = compressed["residual_norm"].float()
 
         # Unpack signs (handle both packed and unpacked formats)

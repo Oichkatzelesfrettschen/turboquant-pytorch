@@ -52,7 +52,7 @@ def compress_kv_cache(cache, bits=3, device="cuda"):
     compressed_keys = []
     compressed_values = []
     total_original_bytes = 0
-    total_compressed_bytes = 0
+    total_compact_bytes = 0
 
     for li in range(n_layers):
         if hasattr(cache, 'layers') and hasattr(cache.layers[0], 'keys'):
@@ -76,17 +76,17 @@ def compress_kv_cache(cache, bits=3, device="cuda"):
         compressed_keys.append((key_comp, compressed_k))
         compressed_values.append((val_comp, compressed_v))
 
-        # Estimate compressed size
-        k_mse_bytes = compressed_k["k_mse"].numel() * 2  # fp16
-        sign_bytes = compressed_k["sign_data"]["packed"].numel() * 8 if "packed" in compressed_k.get("sign_data", {}) else 0
-        r_norm_bytes = compressed_k["residual_norm"].numel() * 2
-        v_bytes = compressed_v["quant_state"]["indices"].numel() if "indices" in compressed_v.get("quant_state", {}) else values.numel() * 2
-        total_compressed_bytes += k_mse_bytes + sign_bytes + r_norm_bytes + v_bytes
+        # Compact storage: quantized indices + packed signs + norms
+        total_compact_bytes += key_comp.compact_storage_bytes(compressed_k)
+        v_qs = compressed_v["quant_state"]
+        if "indices" in v_qs:
+            total_compact_bytes += v_qs["indices"].numel() * v_qs["indices"].element_size()
+        total_compact_bytes += compressed_v["vec_norms"].numel() * 2
 
     return compressed_keys, compressed_values, {
         "original_bytes": total_original_bytes,
-        "compressed_bytes": total_compressed_bytes,
-        "compression_ratio": total_original_bytes / max(total_compressed_bytes, 1),
+        "compressed_bytes": total_compact_bytes,
+        "compression_ratio": total_original_bytes / max(total_compact_bytes, 1),
         "n_layers": n_layers,
     }
 

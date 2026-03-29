@@ -87,7 +87,7 @@ attention bandwidth from 256\,B to 34\,B. Five-tier GPU dispatch
 
 Third, we ground the rotation design space in Cayley-Dickson
 algebra, proving isometric guarantees for structured block
-rotations (30 properties SMT-verified). Ablation reveals a
+rotations (55 statements across 30 proof groups, SMT-verified). Ablation reveals a
 surprising dichotomy: distribution normalization determines
 quality ($>$99\% of gain) while architecture-aware dispatch
 determines throughput.
@@ -776,21 +776,21 @@ is still Gaussian (orthogonal invariance).
 \begin{table}[t]
 \centering
 \caption{Memory breakdown for Qwen2.5-3B KV cache at 3-bit ($d=128$,
-$S=2048$, 36 layers, 2 heads). Total original: 289\,MB in FP16.}
+$S=512$, 36 layers, 2 KV heads via GQA). Measured on RTX 4070 Ti.}
 \label{tab:memory}
 \begin{tabular}{lrrr}
 \toprule
 Component & Vanilla & Ours & Reduction \\
 \midrule
-MSE indices (2-bit/coord) & 4.7\,MB & 4.7\,MB & --- \\
+MSE indices (int8/coord) & 4.7\,MB & 4.7\,MB & --- \\
 QJL signs (int8 vs packed) & 4.7\,MB & 0.6\,MB & $8\times$ \\
 Residual norms (FP16) & 0.3\,MB & 0.3\,MB & --- \\
 Vector norms (FP16) & 0.3\,MB & 0.3\,MB & --- \\
-NSN metadata & --- & 0.1\,MB & (new) \\
+NSN metadata & --- & 0.04\,MB & (new) \\
 \midrule
-\textbf{Total} & \textbf{10.0\,MB} & \textbf{6.0\,MB} & $\mathbf{1.7\times}$ \\
-FP16 baseline & 289\,MB & --- & --- \\
-Compression ratio & $28.9\times$ & $\mathbf{48.2\times}$ & --- \\
+\textbf{Total compact} & \textbf{10.0\,MB} & \textbf{5.9\,MB} & $\mathbf{1.7\times}$ \\
+FP16 baseline & 18.0\,MB & --- & --- \\
+Compact ratio (vs FP16) & $1.80\times$ & $\mathbf{3.05\times}$ & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -960,12 +960,14 @@ kurtosis $\approx 0.03$), well within Lloyd-Max robustness.
 
 \subsection{Limitations and Future Work}
 
-\paragraph{True perplexity.}
-Our evaluation uses attention score cosine similarity as a proxy
-for generation quality. While this is the standard metric for
-KV cache quantization~\cite{turboquant2026,kivi2024}, true
-perplexity measurement requires monkey-patching the attention
-layer to use compressed KV caches during autoregressive decoding.
+\paragraph{Autoregressive generation.}
+We validate compressed KV caches in real autoregressive generation
+by reconstructing the cache from quantized indices and continuing
+decoding. On Qwen2.5-3B at 3-bit, compressed outputs achieve
+23--38\% exact token match with baseline (expected due to
+autoregressive error accumulation) while maintaining coherent,
+factually correct text. Per-layer key cosine averages 0.961
+across all 36 layers; the worst layer (L22) still achieves 0.954.
 
 \paragraph{Cariow implementation.}
 The Cariow-30 octonion multiply algorithm is analyzed but not
@@ -996,11 +998,13 @@ We demonstrate that NSN pre-processing is the dominant technique for
 KV cache quantization quality (+136\,bp cosine), while structured
 rotations (WHT, CD) provide theoretical guarantees, storage efficiency
 ($64\times$ fewer parameters than Haar), and formal verifiability
-(30/36 properties Z3-proven). The Cariow-Hadamard duality reveals
-shared butterfly structure between rotation and algebraic multiplication,
-suggesting fused hardware implementations. Our full-stack pipeline
-achieves 0.9985 attention cosine (vs.\ 0.9849 vanilla) with 69\%
-memory reduction on Qwen2.5-3B and Mistral-7B.
+(30 proof groups, 55 statements Z3-proven). The Cariow-Hadamard
+duality reveals shared butterfly structure between rotation and
+algebraic multiplication, suggesting fused hardware implementations.
+Our optimized pipeline achieves 0.961 average key cosine on
+Qwen2.5-3B at 3-bit with $1.81\times$ compact KV storage reduction,
+compresses at 43K~vectors/sec on RTX~4070~Ti, and produces coherent
+autoregressive generation from compressed caches.
 
 % =====================================================================
 % References

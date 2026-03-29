@@ -41,7 +41,7 @@ class NSNState:
     norms_2: Tensor     # (n,) second normalization norms
 
 
-def nsn_preprocess(x: Tensor) -> Tuple[Tensor, NSNState]:
+def nsn_preprocess(x: Tensor, already_normalized: bool = False) -> Tuple[Tensor, NSNState]:
     """
     Apply Normalize-Shift-Normalize pre-processing.
 
@@ -51,14 +51,23 @@ def nsn_preprocess(x: Tensor) -> Tuple[Tensor, NSNState]:
 
     Args:
         x: input vectors, shape (n, d)
+        already_normalized: if True, skip step 1 (caller guarantees unit norm).
+            The compressor always normalizes before calling NSN, so this
+            avoids a redundant norm+divide pass over the data.
 
     Returns:
         (preprocessed, state) where preprocessed has shape (n, d) and
         state contains metadata needed for nsn_restore().
     """
-    # Step 1: Token-wise normalization
-    norms_1 = x.norm(dim=-1, keepdim=True)  # (n, 1)
-    x_n = x / (norms_1 + 1e-8)
+    if already_normalized:
+        # Skip step 1: norms are all 1.0 by caller guarantee
+        norms_1 = torch.ones(x.shape[0], device=x.device, dtype=x.dtype)
+        x_n = x
+    else:
+        # Step 1: Token-wise normalization
+        norms_1 = x.norm(dim=-1, keepdim=True)  # (n, 1)
+        x_n = x / (norms_1 + 1e-8)
+        norms_1 = norms_1.squeeze(-1)
 
     # Step 2: Channel-wise centering
     channel_means = x_n.mean(dim=0, keepdim=True)  # (1, d)
@@ -69,7 +78,7 @@ def nsn_preprocess(x: Tensor) -> Tuple[Tensor, NSNState]:
     x_nsn = x_ns / (norms_2 + 1e-8)
 
     state = NSNState(
-        norms_1=norms_1.squeeze(-1),
+        norms_1=norms_1 if already_normalized else norms_1,
         channel_means=channel_means.squeeze(0),
         norms_2=norms_2.squeeze(-1),
     )

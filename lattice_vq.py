@@ -79,13 +79,17 @@ class ScalarLloydMaxQuantizer(VectorQuantizer):
         # searchsorted: O(log n_levels) binary search per element.
         # 5.5x faster than argmin on CPU, comparable on GPU.
         indices = torch.searchsorted(self._boundaries, x)
-        return {"indices": indices, "type": "scalar_lloyd_max"}
+        return {"indices": indices.to(torch.int8), "type": "scalar_lloyd_max"}
 
     def dequantize(self, state: dict) -> Tensor:
-        return self.centroids[state["indices"]]
+        return self.centroids[state["indices"].long()]
 
     def bits_per_dimension(self) -> float:
         return float(self.bits)
+
+    def storage_bytes(self, n_elements: int) -> int:
+        """Actual storage bytes for n_elements quantized values."""
+        return n_elements  # int8: 1 byte per element
 
     def to(self, device: str) -> "ScalarLloydMaxQuantizer":
         self.centroids = self.centroids.to(device)

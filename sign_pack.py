@@ -80,6 +80,36 @@ def unpack_signs(packed: Tensor, d: int) -> Tensor:
     return signs_bool.float() * 2.0 - 1.0
 
 
+def pack_signs_from_projection(projected: Tensor) -> Tensor:
+    """
+    Pack signs directly from projection output, skipping the int8 intermediate.
+
+    Instead of: signs = (projected >= 0).int8 * 2 - 1; packed = pack_signs(signs)
+    This does: packed = pack_bits(projected >= 0) in a single pass.
+
+    Saves one N*D int8 allocation and one N*D multiply.
+
+    Args:
+        projected: shape (..., d) float tensor (QJL projection output)
+
+    Returns:
+        Packed tensor, shape (..., ceil(d/64)), dtype=torch.int64.
+    """
+    d = projected.shape[-1]
+    batch_shape = projected.shape[:-1]
+    n_words = (d + 63) // 64
+
+    positive = projected >= 0  # bool, no int8 intermediate
+
+    if d % 64 != 0:
+        pad_size = 64 * n_words - d
+        positive = torch.nn.functional.pad(positive, (0, pad_size), value=False)
+
+    positive = positive.reshape(*batch_shape, n_words, 64)
+    bit_positions = torch.arange(64, device=projected.device, dtype=torch.int64)
+    return (positive.long() << bit_positions).sum(dim=-1)
+
+
 def packed_inner_product(packed: Tensor, values: Tensor, d: int) -> Tensor:
     """
     Compute inner product <signs, values> from bit-packed signs.
