@@ -8,12 +8,23 @@ import torch.nn.functional as F
 import time
 import os
 import sys
+import importlib.util
 
-# Allow running as `python validate.py` from within the package directory
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Import as package to support relative imports
+_pkg_dir = os.path.dirname(os.path.abspath(__file__))
+_spec = importlib.util.spec_from_file_location(
+    "turboquant",
+    os.path.join(_pkg_dir, "__init__.py"),
+    submodule_search_locations=[_pkg_dir],
+)
+_turboquant = importlib.util.module_from_spec(_spec)
+sys.modules["turboquant"] = _turboquant
+_spec.loader.exec_module(_turboquant)
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from turboquant.compressors import TurboQuantCompressorV2, TurboQuantCompressorMSE
+from turboquant.rotations import HaarRotation, WHTRotation, CDRotation
+from turboquant.lattice_vq import ScalarLloydMaxQuantizer, E8LatticeQuantizer
 
 MODEL_NAME = "Qwen/Qwen2.5-3B-Instruct"
 NEEDLE = "The secret project code name is AURORA-7749."
@@ -95,7 +106,18 @@ def main():
         # Instead, just use the cached keys as queries too (self-attention validation)
         # Pick the LAST token's perspective: its query attending to all keys
 
-        for bits in [2, 3, 4]:
+        # Rotation/quantizer configurations to sweep
+        rotation_configs = [
+            ("Haar", None, None),
+            ("WHT", lambda d, s: WHTRotation(d, seed=s, device="cuda"), None),
+            ("CD-Oct", lambda d, s: CDRotation(d, block_dim=8, seed=s, device="cuda"), None),
+            ("WHT+E8", lambda d, s: WHTRotation(d, seed=s, device="cuda"),
+             lambda d, b: E8LatticeQuantizer(d, device="cuda")),
+        ]
+
+        for rot_name, rot_factory, quant_factory in rotation_configs:
+          for bits in [2, 3, 4]:
+            print(f"\n  --- {rot_name} @ {bits}-bit ---")
             total_compressed_bytes = 0
             total_uncompressed_bytes = 0
             top1_matches = 0
@@ -110,9 +132,19 @@ def main():
 
                 B, H, S, D = keys.shape
 
+                # Build rotation/quantizer for this layer
+                rot = rot_factory(D, layer_idx * 1000) if rot_factory else None
+                quant = quant_factory(D, bits) if quant_factory else None
+
                 # Compress keys
-                key_comp = TurboQuantCompressorV2(D, bits, seed=layer_idx * 1000, device="cuda")
-                val_comp = TurboQuantCompressorMSE(D, bits, seed=layer_idx * 1000 + 500, device="cuda")
+                key_comp = TurboQuantCompressorV2(
+                    D, bits, seed=layer_idx * 1000, device="cuda",
+                    rotation=rot, quantizer=quant,
+                )
+                val_comp = TurboQuantCompressorMSE(
+                    D, bits, seed=layer_idx * 1000 + 500, device="cuda",
+                    rotation=rot, quantizer=quant,
+                )
 
                 compressed_k = key_comp.compress(keys)
                 compressed_v = val_comp.compress(values)
@@ -171,14 +203,13 @@ def main():
 
                     n_checks += 1
 
-            # Summary for this bit-width
+            # Summary for this rotation + bit-width combo
             ratio = total_uncompressed_bytes / total_compressed_bytes
             avg_cos = sum(cosine_sims) / len(cosine_sims)
             top1_pct = 100 * top1_matches / n_checks
             top5_pct = 100 * top5_matches / n_checks
             avg_needle_rank = needle_rank_sum / n_checks if needle_start else -1
 
-            print(f"\n  TQ-{bits}bit:")
             print(f"    Compression:       {ratio:.1f}x  ({total_compressed_bytes / 1024 / 1024:.1f} MB vs {total_uncompressed_bytes / 1024 / 1024:.1f} MB)")
             print(f"    Score cosine sim:  {avg_cos:.6f}  (1.0 = perfect)")
             print(f"    Top-1 match:       {top1_pct:.1f}%  ({top1_matches}/{n_checks} heads)")

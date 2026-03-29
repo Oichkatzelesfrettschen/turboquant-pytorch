@@ -9,8 +9,18 @@ import math
 import time
 import os
 import sys
+import importlib.util
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Import as package to support relative imports in turboquant.py
+_pkg_dir = os.path.dirname(os.path.abspath(__file__))
+_spec = importlib.util.spec_from_file_location(
+    "turboquant",
+    os.path.join(_pkg_dir, "__init__.py"),
+    submodule_search_locations=[_pkg_dir],
+)
+_turboquant = importlib.util.module_from_spec(_spec)
+sys.modules["turboquant"] = _turboquant
+_spec.loader.exec_module(_turboquant)
 
 from turboquant import TurboQuantMSE, TurboQuantProd, TurboQuantKVCache, LloydMaxCodebook
 

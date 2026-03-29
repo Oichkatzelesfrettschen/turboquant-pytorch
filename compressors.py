@@ -20,65 +20,65 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
+from typing import Optional, Union
+
+from .rotations import Rotation, HaarRotation
+from .lattice_vq import VectorQuantizer, ScalarLloydMaxQuantizer
 
 
 class TurboQuantCompressorV2:
     """
     Compressor that stores compressed representations AND supports
     direct inner product computation without full decompression.
+
+    Supports pluggable rotation and quantization methods.
     """
 
-    def __init__(self, head_dim: int, bits: int, seed: int, device: str = "cpu"):
+    def __init__(
+        self,
+        head_dim: int,
+        bits: int,
+        seed: int,
+        device: str = "cpu",
+        rotation: Optional[Rotation] = None,
+        quantizer: Optional[VectorQuantizer] = None,
+    ):
         self.head_dim = head_dim
         self.bits = bits
         self.mse_bits = max(bits - 1, 1)
         self.device = device
 
-        # Rotation matrix
-        gen = torch.Generator(device="cpu")
-        gen.manual_seed(seed)
-        G = torch.randn(head_dim, head_dim, generator=gen)
-        Q, R = torch.linalg.qr(G)
-        diag_sign = torch.sign(torch.diag(R))
-        diag_sign[diag_sign == 0] = 1.0
-        self.Pi = (Q * diag_sign.unsqueeze(0)).to(device)
+        # Rotation: use provided or default to Haar
+        if rotation is not None:
+            self._rotation = rotation.to(device)
+        else:
+            self._rotation = HaarRotation(head_dim, seed=seed, device=device)
 
-        # Lloyd-Max codebook
-        self.centroids = self._solve_codebook(head_dim, self.mse_bits).to(device)
+        # Quantizer: use provided or default to scalar Lloyd-Max
+        if quantizer is not None:
+            self._quantizer = quantizer.to(device)
+        else:
+            self._quantizer = ScalarLloydMaxQuantizer(head_dim, self.mse_bits, device=device)
+
+        # Legacy: keep centroids for backward compat with scalar quantizer
+        if isinstance(self._quantizer, ScalarLloydMaxQuantizer):
+            self.centroids = self._quantizer.centroids
+        else:
+            from .lloyd_max import LloydMaxCodebook
+            self.centroids = LloydMaxCodebook(head_dim, self.mse_bits).centroids.to(device)
+
+        # Legacy: keep Pi for backward compat
+        if isinstance(self._rotation, HaarRotation):
+            self.Pi = self._rotation.Pi
+            self.PiT = self.Pi.T.contiguous()
+        else:
+            self.Pi = None
+            self.PiT = None
 
         # QJL matrix
         gen2 = torch.Generator(device="cpu")
         gen2.manual_seed(seed + 10000)
         self.S = torch.randn(head_dim, head_dim, generator=gen2).to(device)
-
-        # Precompute Pi^T for fast dequant
-        self.PiT = self.Pi.T.contiguous()
-
-    def _solve_codebook(self, d: int, bits: int) -> torch.Tensor:
-        from scipy import integrate
-        n_levels = 2 ** bits
-        sigma = 1.0 / math.sqrt(d)
-
-        def pdf(x):
-            return (1.0 / math.sqrt(2 * math.pi * sigma ** 2)) * math.exp(-x * x / (2 * sigma ** 2))
-
-        lo, hi = -3.5 * sigma, 3.5 * sigma
-        centroids = [lo + (hi - lo) * (i + 0.5) / n_levels for i in range(n_levels)]
-
-        for _ in range(200):
-            boundaries = [(centroids[i] + centroids[i + 1]) / 2.0 for i in range(n_levels - 1)]
-            edges = [lo * 3] + boundaries + [hi * 3]
-            new_centroids = []
-            for i in range(n_levels):
-                a, b = edges[i], edges[i + 1]
-                num, _ = integrate.quad(lambda x: x * pdf(x), a, b)
-                den, _ = integrate.quad(pdf, a, b)
-                new_centroids.append(num / den if den > 1e-15 else centroids[i])
-            if max(abs(new_centroids[i] - centroids[i]) for i in range(n_levels)) < 1e-10:
-                break
-            centroids = new_centroids
-
-        return torch.tensor(centroids, dtype=torch.float32)
 
     @torch.no_grad()
     def compress(self, states: torch.Tensor) -> dict:
@@ -93,16 +93,15 @@ class TurboQuantCompressorV2:
         vec_norms = torch.norm(flat, dim=-1, keepdim=True)  # (N, 1)
         flat_norm = flat / (vec_norms + 1e-8)
 
-        # Rotate and quantize
-        rotated = flat_norm @ self.PiT.T  # use Pi, so PiT.T = Pi
-        # Actually: rotated = flat_norm @ self.Pi.T
-        rotated = flat_norm @ self.Pi.T
-        diffs = rotated.unsqueeze(-1) - self.centroids
-        indices = diffs.abs().argmin(dim=-1).to(torch.uint8)
+        # Rotate
+        rotated = self._rotation.rotate(flat_norm)
 
-        # MSE reconstruction in original space (for inner product term 1)
-        reconstructed_rotated = self.centroids[indices.long()]
-        k_mse = (reconstructed_rotated @ self.Pi) * vec_norms  # (N, D) - back in original scale
+        # Quantize
+        quant_state = self._quantizer.quantize(rotated)
+        reconstructed_rotated = self._quantizer.dequantize(quant_state)
+
+        # MSE reconstruction in original space
+        k_mse = self._rotation.unrotate(reconstructed_rotated) * vec_norms
 
         # Residual in original space
         residual = flat - k_mse
@@ -113,9 +112,9 @@ class TurboQuantCompressorV2:
         signs = (projected >= 0).to(torch.int8) * 2 - 1  # {-1, +1} as int8
 
         return {
-            "k_mse": k_mse.to(torch.float16).reshape(B, H, S, D),  # MSE reconstruction
-            "qjl_signs": signs.reshape(B, H, S, D),  # QJL sign bits
-            "residual_norm": residual_norm.to(torch.float16).reshape(B, H, S),  # ||r||
+            "k_mse": k_mse.to(torch.float16).reshape(B, H, S, D),
+            "qjl_signs": signs.reshape(B, H, S, D),
+            "residual_norm": residual_norm.to(torch.float16).reshape(B, H, S),
             "shape": (B, H, S, D),
         }
 
@@ -159,43 +158,34 @@ class TurboQuantCompressorV2:
 
 
 class TurboQuantCompressorMSE:
-    """Simpler MSE-only compressor for values (no QJL needed)."""
+    """
+    Simpler MSE-only compressor for values (no QJL needed).
 
-    def __init__(self, head_dim: int, bits: int, seed: int, device: str = "cpu"):
+    Supports pluggable rotation and quantization methods.
+    """
+
+    def __init__(
+        self,
+        head_dim: int,
+        bits: int,
+        seed: int,
+        device: str = "cpu",
+        rotation: Optional[Rotation] = None,
+        quantizer: Optional[VectorQuantizer] = None,
+    ):
         self.head_dim = head_dim
         self.bits = bits
         self.device = device
 
-        gen = torch.Generator(device="cpu")
-        gen.manual_seed(seed)
-        G = torch.randn(head_dim, head_dim, generator=gen)
-        Q, R = torch.linalg.qr(G)
-        diag_sign = torch.sign(torch.diag(R))
-        diag_sign[diag_sign == 0] = 1.0
-        self.Pi = (Q * diag_sign.unsqueeze(0)).to(device)
-        self.centroids = self._solve_codebook(head_dim, bits).to(device)
+        if rotation is not None:
+            self._rotation = rotation.to(device)
+        else:
+            self._rotation = HaarRotation(head_dim, seed=seed, device=device)
 
-    def _solve_codebook(self, d, bits):
-        from scipy import integrate
-        n_levels = 2 ** bits
-        sigma = 1.0 / math.sqrt(d)
-        def pdf(x):
-            return (1.0 / math.sqrt(2 * math.pi * sigma ** 2)) * math.exp(-x * x / (2 * sigma ** 2))
-        lo, hi = -3.5 * sigma, 3.5 * sigma
-        centroids = [lo + (hi - lo) * (i + 0.5) / n_levels for i in range(n_levels)]
-        for _ in range(200):
-            boundaries = [(centroids[i] + centroids[i + 1]) / 2.0 for i in range(n_levels - 1)]
-            edges = [lo * 3] + boundaries + [hi * 3]
-            new_c = []
-            for i in range(n_levels):
-                a, b = edges[i], edges[i + 1]
-                num, _ = integrate.quad(lambda x: x * pdf(x), a, b)
-                den, _ = integrate.quad(pdf, a, b)
-                new_c.append(num / den if den > 1e-15 else centroids[i])
-            if max(abs(new_c[i] - centroids[i]) for i in range(n_levels)) < 1e-10:
-                break
-            centroids = new_c
-        return torch.tensor(centroids, dtype=torch.float32)
+        if quantizer is not None:
+            self._quantizer = quantizer.to(device)
+        else:
+            self._quantizer = ScalarLloydMaxQuantizer(head_dim, bits, device=device)
 
     @torch.no_grad()
     def compress(self, states: torch.Tensor) -> dict:
@@ -203,11 +193,10 @@ class TurboQuantCompressorMSE:
         flat = states.reshape(-1, D).float()
         vec_norms = torch.norm(flat, dim=-1, keepdim=True)
         flat_norm = flat / (vec_norms + 1e-8)
-        rotated = flat_norm @ self.Pi.T
-        diffs = rotated.unsqueeze(-1) - self.centroids
-        indices = diffs.abs().argmin(dim=-1).to(torch.uint8)
+        rotated = self._rotation.rotate(flat_norm)
+        quant_state = self._quantizer.quantize(rotated)
         return {
-            "indices": indices,
+            "quant_state": quant_state,
             "vec_norms": vec_norms.squeeze(-1).to(torch.float16),
             "shape": (B, H, S, D),
         }
@@ -215,8 +204,8 @@ class TurboQuantCompressorMSE:
     @torch.no_grad()
     def decompress(self, compressed: dict) -> torch.Tensor:
         B, H, S, D = compressed["shape"]
-        indices = compressed["indices"].long()
-        reconstructed = self.centroids[indices] @ self.Pi
+        reconstructed_rotated = self._quantizer.dequantize(compressed["quant_state"])
+        reconstructed = self._rotation.unrotate(reconstructed_rotated)
         vec_norms = compressed["vec_norms"].float().unsqueeze(-1)
         return (reconstructed * vec_norms).reshape(B, H, S, D)
 

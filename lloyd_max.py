@@ -12,7 +12,12 @@ We solve the Lloyd-Max conditions (continuous 1-D k-means) to find optimal centr
 
 import torch
 import math
+from functools import lru_cache
 from scipy import integrate, special
+
+# Cache solved codebooks to avoid recomputation for repeated (d, bits) pairs.
+# Typical usage creates many TurboQuantMSE instances with the same (d, bits).
+_codebook_cache = {}
 
 
 def beta_pdf(x: float, d: int) -> float:
@@ -105,14 +110,28 @@ def compute_expected_distortion(d: int, bits: int, centroids: torch.Tensor, boun
 
 
 class LloydMaxCodebook:
-    """Precomputed Lloyd-Max codebook for a given dimension and bit-width."""
+    """
+    Precomputed Lloyd-Max codebook for a given dimension and bit-width.
+
+    Codebook solutions are cached globally: creating multiple LloydMaxCodebook
+    instances with the same (d, bits, use_exact) reuses the solved centroids
+    instead of re-running the iterative Lloyd-Max algorithm.
+    """
 
     def __init__(self, d: int, bits: int, use_exact: bool = False):
         self.d = d
         self.bits = bits
         self.n_levels = 2 ** bits
-        self.centroids, self.boundaries = solve_lloyd_max(d, bits, use_exact)
-        self.distortion = compute_expected_distortion(d, bits, self.centroids, self.boundaries, use_exact)
+
+        cache_key = (d, bits, use_exact)
+        if cache_key in _codebook_cache:
+            self.centroids, self.boundaries, self.distortion = _codebook_cache[cache_key]
+        else:
+            self.centroids, self.boundaries = solve_lloyd_max(d, bits, use_exact)
+            self.distortion = compute_expected_distortion(
+                d, bits, self.centroids, self.boundaries, use_exact
+            )
+            _codebook_cache[cache_key] = (self.centroids, self.boundaries, self.distortion)
 
     def quantize(self, x: torch.Tensor) -> torch.Tensor:
         """Quantize values to nearest centroid indices."""
