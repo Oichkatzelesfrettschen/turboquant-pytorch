@@ -55,13 +55,14 @@ scores = comp.asymmetric_attention_scores(queries, compressed)
 
 | Category | Modules |
 |----------|---------|
-| Core pipeline | turboquant.py, compressors.py, lloyd_max.py |
+| Core pipeline | turboquant.py, compressors.py, lloyd_max.py, config.py |
 | CD algebra | cd_algebra.py, cd_rotation.py, cd_fidelity.py, zd_bias.py |
 | Rotations | rotations.py, e8_rotation.py, clifford_rotor.py, hybrid_pipeline.py |
 | Quantizers | lattice_vq.py, e8_quantizer.py, lattice_codebook.py, kmeans_vq.py |
 | Pre/post-processing | nsn_preprocess.py, sign_pack.py, adaptive.py, hierarchical.py |
+| Bit allocation | quantization_force.py (Lagrange-optimal, dual MSE/cosine metric) |
 | GPU/CPU dispatch | gpu_dispatch.py, cpu_dispatch.py, triton_kernels.py, cuda_ops.py |
-| Verification | formal_verify.py (30 Z3 proof groups, 55 statements) |
+| Verification | formal_verify.py (31 Z3 proof groups, 58 statements) |
 
 ## GPU Architecture Dispatch
 
@@ -75,16 +76,24 @@ Auto-detects and optimizes for your GPU:
 | Turing (RTX 20xx) | 7.5 | FP16 tensor cores |
 | Generic | <7.5 | FP32 cuBLAS |
 
+## Quantization Force (Pais Generalization)
+
+Inspired by dimensional analysis from the Planck force S_F = c^4/G:
+bit allocation is unified under a single Lagrange variational principle.
+
+Key discovery: **MSE-optimal and cosine-optimal allocation are opposite strategies.**
+- MSE-optimal (Lagrange): high-variance layers get more bits (2.1x lower MSE)
+- Cosine-optimal (inverted): low-variance layers get more bits (+1.6pp better cosine)
+
+The `metric="mse"|"cosine"` parameter lets you choose the optimization target.
+
 ## Verification
 
 ```bash
-python test_turboquant.py     # 7 original tests
-python test_synthesis.py      # 9 synthesis tests
-python test_pr_review.py      # 26 PR review tests
-python formal_verify.py       # 55 Z3 SMT proofs (<2 seconds)
+pytest test_*.py              # 171 tests (unit + Z3 proofs)
+python formal_verify.py       # 58 Z3 SMT proofs (<2 seconds)
+ruff check .                  # lint (0 warnings)
 ```
-
-97 total verification points. 30/36 algebraic properties Z3-proven.
 
 ## Paper
 

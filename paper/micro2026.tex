@@ -820,6 +820,20 @@ gain at zero additional storage cost. The ``bit-width'' parameter
 thus controls codebook granularity, not storage, when indices are
 stored as bytes rather than bit-packed.
 
+\paragraph{MSE-cosine dichotomy.}
+Lagrange-optimal per-layer allocation (minimizing total MSE) assigns
+more bits to \emph{high}-variance layers, while cosine-optimal
+allocation assigns more bits to \emph{low}-variance layers.
+On Qwen2.5-3B (36 layers, 3.5-bit average budget):
+Lagrange achieves $2.1\times$ lower MSE (9.50 vs.\ 19.67), but
+greedy-cosine achieves $+1.6$\,pp better attention cosine
+(0.976 vs.\ 0.974). The explanation:
+$\cos \approx 1 - \text{MSE}/(2\sigma^2)$, so low-variance regions
+are most \emph{cosine-sensitive} even though high-variance regions
+dominate total MSE. This dichotomy means the allocation strategy
+should match the downstream metric: MSE for reconstruction,
+cosine for attention fidelity.
+
 \subsection{RCA: Why Rotation Choice Matters Less Than Expected}
 
 The compressor normalizes each vector to unit norm before rotation.
