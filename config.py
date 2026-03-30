@@ -51,11 +51,9 @@ class TurboQuantConfig:
         Default bits=4 (was 3) because int8 index storage makes 3-bit
         and 4-bit cost identical memory. 4-bit gives +2.8pp avg cosine
         on Qwen2.5-3B (0.961 -> 0.989) at zero extra storage cost.
-        This is the "free bits" finding from profiling RCA.
 
-        Ablation on Qwen2.5-3B proved:
-            WHT + NSN + sign packing = cos 0.9985, top1 80.6%, 2.8 MB
-            vs vanilla (Haar only) = cos 0.9849, top1 55.6%, 9.0 MB
+        For maximum compression, use recommended_e8() instead: E8 lattice
+        at ~1 bit/dim matches 4-bit scalar quality (0.990 vs 0.989 cosine).
 
         NSN is the dominant contributor (+136bp cosine, +25% top1).
         Sign packing gives -69% memory with zero quality loss.
@@ -74,6 +72,30 @@ class TurboQuantConfig:
             use_sign_packing=True,
             adaptive=False,  # per-head adaptive adds complexity, marginal gain
             hierarchical=False,
+        )
+
+    @staticmethod
+    def recommended_e8(d: int = 128) -> "TurboQuantConfig":
+        """
+        Maximum compression with E8 lattice + CD8 rotation.
+
+        Validated on Qwen2.5-3B (36 layers, all-layer average):
+            CD8+E8+NSN: cos 0.9895, MSE 0.169 at ~1 bit/dim
+            WHT+Scalar4b+NSN: cos 0.9889, MSE 0.185 at ~4 bits/dim
+
+        E8 matches 4-bit scalar quality at 1/4 the bit rate.
+        The structural alignment between CD8 (8D block rotation) and
+        E8 (8D lattice quantizer) gives the best rate-distortion.
+
+        Requires d % 8 == 0 (true for all current LLM head dimensions).
+        """
+        return TurboQuantConfig(
+            rotation="cd8",
+            quantizer="e8",
+            bits=3,  # E8 is ~1 bit/dim regardless of this parameter
+            use_qjl=True,  # QJL correction helps at 1 bit/dim
+            use_sign_packing=True,
+            adaptive=False,
         )
 
     @staticmethod
