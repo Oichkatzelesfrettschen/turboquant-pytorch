@@ -318,3 +318,91 @@ class TurboQuantCompressorMSE:
         return (reconstructed * vec_norms).reshape(B, H, S, D)
 
 
+class SVDCompressorV2:
+    """
+    SVD pre-compression + TurboQuant for joint rank-bitwidth optimization.
+
+    For KV caches with low-rank structure, SVD reduces dimensionality
+    before quantization, achieving higher compression at the same quality.
+
+    Pipeline: K -> SVD(rank=r) -> [U_r, S_V_r] -> quantize(S_V_r) -> store
+
+    The U_r factor (seq_len x rank) is stored at FP16 (small relative
+    to the original seq_len x d). The S_V_r factor (rank x d) is
+    quantized via the standard TurboQuant pipeline.
+
+    For attention: <q, K_i> = U_r[i] @ (S_V_r @ q), which is O(rank*d)
+    instead of O(d^2) -- a speedup when rank << d.
+    """
+
+    def __init__(
+        self,
+        head_dim: int,
+        rank: int = 32,
+        bits: int = 4,
+        seed: int = 0,
+        device: str = "cpu",
+        rotation: Optional[Rotation] = None,
+        quantizer: Optional[VectorQuantizer] = None,
+    ):
+        self.head_dim = head_dim
+        self.rank = rank
+        self.bits = bits
+        self.device = device
+        self._inner = TurboQuantCompressorMSE(
+            head_dim, bits, seed=seed, device=device,
+            rotation=rotation, quantizer=quantizer,
+        )
+
+    @torch.no_grad()
+    def compress(self, states: torch.Tensor) -> dict:
+        """SVD + quantize: states (B, H, S, D) -> compressed dict."""
+        from .tensor_decomposition import svd_compress as _svd
+
+        B, H, S, D = states.shape
+        all_U = []
+        all_sv_compressed = []
+        r = min(self.rank, min(S, D))
+
+        for b in range(B):
+            for h in range(H):
+                K = states[b, h].float()
+                U_r, S_V_r = _svd(K, r)
+                sv_4d = S_V_r.unsqueeze(0).unsqueeze(0)
+                sv_comp = self._inner.compress(sv_4d)
+                all_U.append(U_r.to(torch.float16))
+                all_sv_compressed.append(sv_comp)
+
+        return {
+            "U_factors": all_U,
+            "SV_compressed": all_sv_compressed,
+            "shape": (B, H, S, D),
+            "rank": r,
+        }
+
+    @torch.no_grad()
+    def decompress(self, compressed: dict) -> torch.Tensor:
+        """Reconstruct full KV from SVD factors."""
+        B, H, S, D = compressed["shape"]
+        result = torch.zeros(B, H, S, D, device=self.device)
+        idx = 0
+        for b in range(B):
+            for h in range(H):
+                U_r = compressed["U_factors"][idx].float()
+                sv_comp = compressed["SV_compressed"][idx]
+                S_V_r = self._inner.decompress(sv_comp).reshape(-1, D)
+                result[b, h] = (U_r @ S_V_r).to(result.dtype)
+                idx += 1
+        return result
+
+    def storage_bytes(self, compressed: dict) -> int:
+        """Actual storage bytes for compressed representation."""
+        B, H, S, D = compressed["shape"]
+        rank = compressed["rank"]
+        total = B * H * S * rank * 2  # U factors at fp16
+        for sv in compressed["SV_compressed"]:
+            qs = sv.get("quant_state", {})
+            if "indices" in qs:
+                total += qs["indices"].numel() * qs["indices"].element_size()
+            total += sv["vec_norms"].numel() * 2
+        return total
